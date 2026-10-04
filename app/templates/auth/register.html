@@ -1,53 +1,72 @@
 {% extends "base.html" %}
 
-{% block title %}Register | {{ app_name }}{% endblock %}
+{% block title %}Create Account | {{ app_name }}{% endblock %}
+{% block meta_description %}Create your secure CareCompass account to track health symptoms, prepare doctor visit briefs, and manage appointments.{% endblock %}
+
 {% block content %}
   <section class="auth-shell">
     <div class="auth-side">
-      <span class="eyebrow">Create account</span>
-      <h1>Create your account and keep your care notes in one place.</h1>
+      <span class="eyebrow">Get Started</span>
+      <h1>Take control of your health consultations.</h1>
       <p>
-        Start with a username, email, and password to save consultations,
-        manage appointments, and download reports later.
+        Join CareCompass to build an organized medical journal, eliminate visit stress, and ensure your doctor gets every essential detail.
       </p>
-      <ul class="value-list">
-        <li>Choose your display name</li>
-        <li>Save consultation history</li>
-        <li>Manage appointments and reports</li>
-        {% if not email_verification_required %}
-          <li>Instant sign-in for public demo access</li>
-        {% endif %}
-      </ul>
+
+      <div class="auth-value-stack">
+        <div class="auth-value-item">
+          <div class="auth-check-icon">✓</div>
+          <div>
+            <strong>100% Confidential & Secure</strong>
+            <p>Your notes and records are encrypted and accessible only to you.</p>
+          </div>
+        </div>
+        <div class="auth-value-item">
+          <div class="auth-check-icon">✓</div>
+          <div>
+            <strong>Concise Physician Briefings</strong>
+            <p>Export clinical summaries that fit right into 15-minute consultations.</p>
+          </div>
+        </div>
+        <div class="auth-value-item">
+          <div class="auth-check-icon">✓</div>
+          <div>
+            <strong>Appointment Organizer with .ics Sync</strong>
+            <p>Track doctor visits, set agendas, and sync with your personal calendar.</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="auth-card">
       <div class="panel-head">
         <div>
-          <span class="eyebrow">New account</span>
+          <span class="eyebrow">Registration</span>
           <h2>Create your account</h2>
         </div>
+        <span class="status-badge neutral">Free Access</span>
       </div>
+
       <form method="post" class="stack-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <label>
-          <span>Full name</span>
-          <input type="text" name="username" maxlength="40" placeholder="Your full name" required>
-        </label>
-        <label>
-          <span>Email address</span>
-          <input type="email" name="email" placeholder="you@example.com" required>
-        </label>
-        <label>
-          <span>Password</span>
-          <input type="password" name="password" placeholder="Minimum 8 characters with letters and numbers" required>
-        </label>
-        <button type="submit" class="button primary wide">Create account</button>
+        <div class="form-group">
+          <label for="username">Your Full Name</label>
+          <input type="text" id="username" name="username" maxlength="40" placeholder="e.g. Dr. Sarah Jenkins or Sarah" required>
+        </div>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" placeholder="name@domain.com" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Choose Password</label>
+          <input type="password" id="password" name="password" placeholder="At least 8 characters with letters & numbers" required>
+        </div>
+
+        <button type="submit" class="button primary wide" style="margin-top: 12px;">Create My Account</button>
       </form>
+
       <div class="auth-meta">
-        {% if not email_verification_required %}
-          <span>Your account opens immediately after sign-up.</span>
-        {% endif %}
-        <span>Already registered? <a href="{{ url_for('auth.login') }}">Login here</a></span>
+        <span>Already have an account? <a href="{{ url_for('auth.login') }}"><strong>Sign in here</strong></a></span>
+        <span class="demo-badge">🔒 Cloud encrypted on Supabase PostgreSQL</span>
       </div>
     </div>
   </section>

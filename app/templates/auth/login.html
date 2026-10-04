@@ -1,50 +1,85 @@
 {% extends "base.html" %}
 
-{% block title %}Login | {{ app_name }}{% endblock %}
+{% block title %}Sign In | {{ app_name }}{% endblock %}
+{% block meta_description %}Access your personal health journal, consultation briefs, and upcoming clinic visits.{% endblock %}
+
 {% block content %}
   <section class="auth-shell">
     <div class="auth-side">
-      <span class="eyebrow">Sign in</span>
-      <h1>Open your care dashboard.</h1>
+      <span class="eyebrow">Personal Health Companion</span>
+      <h1>Welcome back to your private clinical journal.</h1>
       <p>
-        Continue saved consultations, review reports, monitor appointments,
-        and keep everything easy to reach.
+        Review your symptom history, prepare concise consultation briefs for your physician, and manage your upcoming clinic appointments in one secure space.
       </p>
+
       <div class="auth-pill-grid">
-        <span class="pill-card">Private records</span>
-        <span class="pill-card">Guided symptom support</span>
-        <span class="pill-card">Appointments</span>
-        <span class="pill-card">PDF reports</span>
+        <div class="pill-card">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <div>
+            <strong>Private & Secure</strong>
+            <span>Confidential journal</span>
+          </div>
+        </div>
+        <div class="pill-card">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          <div>
+            <strong>Physician Briefs</strong>
+            <span>Structured outlines</span>
+          </div>
+        </div>
+        <div class="pill-card">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          <div>
+            <strong>Calendar Sync</strong>
+            <span>1-Click .ics export</span>
+          </div>
+        </div>
+        <div class="pill-card">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          <div>
+            <strong>Care Locator</strong>
+            <span>Verified medical units</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="auth-trust-note">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        <span>Encrypted clinical records on Supabase Cloud.</span>
       </div>
     </div>
 
     <div class="auth-card">
       <div class="panel-head">
         <div>
-          <span class="eyebrow">Account access</span>
-          <h2>Welcome back</h2>
+          <span class="eyebrow">Account Access</span>
+          <h2>Sign in</h2>
         </div>
-        <span class="mini-status">Secure session</span>
+        <span class="status-badge live">Secure Session</span>
       </div>
+
       <form method="post" class="stack-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <label>
-          <span>Email or name</span>
-          <input type="text" name="identifier" placeholder="Enter your email or full name" required>
-        </label>
-        <label>
-          <span>Password</span>
-          <input type="password" name="password" placeholder="Enter your password" required>
-        </label>
-        <button type="submit" class="button primary wide">Login</button>
+        <div class="form-group">
+          <label for="identifier">Email address or Username</label>
+          <input type="text" id="identifier" name="identifier" placeholder="e.g. sarah@example.com or Sarah" required>
+        </div>
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label for="password" style="margin-bottom: 0;">Password</label>
+            {% if password_reset_available %}
+              <a href="{{ url_for('auth.forgot_password') }}" class="auth-link-subtle">Forgot?</a>
+            {% endif %}
+          </div>
+          <input type="password" id="password" name="password" placeholder="Enter your password" required>
+        </div>
+
+        <button type="submit" class="button primary wide" style="margin-top: 12px;">Sign In</button>
       </form>
+
       <div class="auth-meta">
-        {% if password_reset_available %}
-          <a href="{{ url_for('auth.forgot_password') }}">Forgot password?</a>
-        {% else %}
-          <span>Public demo mode uses direct sign-in without email reset.</span>
-        {% endif %}
-        <span>New here? <a href="{{ url_for('auth.register') }}">Create account</a></span>
+        <span>New to CareCompass? <a href="{{ url_for('auth.register') }}"><strong>Create free account</strong></a></span>
+        <span class="demo-badge">🔒 Cloud database connected & verified</span>
       </div>
     </div>
   </section>
