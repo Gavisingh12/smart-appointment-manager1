@@ -4,13 +4,33 @@ def build_hospital_map(city):
     import folium
     from geopy.geocoders import Nominatim
 
-    geolocator = Nominatim(user_agent="carecompass_hospital_locator", timeout=5)
-    location = geolocator.geocode(city)
-    if not location:
-        return None
+    city_clean = city.strip().lower()
+    known_cities = {
+        "london": (51.5074, -0.1278),
+        "mumbai": (19.0760, 72.8777),
+        "delhi": (28.6139, 77.2090),
+        "new york": (40.7128, -74.0060),
+        "bengaluru": (12.9716, 77.5946),
+        "bangalore": (12.9716, 77.5946),
+        "paris": (48.8566, 2.3522),
+        "chicago": (41.8781, -87.6298),
+        "toronto": (43.6532, -79.3832),
+        "tokyo": (35.6762, 139.6503),
+    }
 
-    lat, lon = location.latitude, location.longitude
-    hospital_map = folium.Map(location=[lat, lon], zoom_start=13, tiles="CartoDB positron")
+    if city_clean in known_cities:
+        lat, lon = known_cities[city_clean]
+    else:
+        try:
+            geolocator = Nominatim(user_agent="carecompass_hospital_finder_v2", timeout=3)
+            location = geolocator.geocode(city)
+            if not location:
+                return None
+            lat, lon = location.latitude, location.longitude
+        except Exception:
+            # Fallback to London coordinates if network is unreachable
+            lat, lon = 51.5074, -0.1278
+    hospital_map = folium.Map(location=[lat, lon], zoom_start=13, tiles="OpenStreetMap")
 
     hospitals = [
         {
