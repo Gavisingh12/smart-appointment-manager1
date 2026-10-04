@@ -1,5 +1,5 @@
 /*
- * CareCompass Design System — "Modern Nordic Clinical"
+ * CareCompass Design System — "Modern Nordic Clinical (Elevated)"
  * 
  * Verified WCAG AA / AAA Contrast Ratios:
  * - Primary Text (--text #1A2229) on Surface (--surface #FFFFFF): 16.10:1 (Passes AAA)
@@ -62,16 +62,17 @@
   --radius-card: 12px;
   --radius-pill: 9999px;
 
-  /* Elevation */
-  --shadow-sm: 0 1px 2px rgba(26, 34, 41, 0.06);
-  --shadow-card: 0 1px 2px rgba(26, 34, 41, 0.06);
+  /* Multi-Layer Elevation */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.04), 0 6px 18px -4px rgba(15, 23, 42, 0.04);
+  --shadow-hover: 0 2px 6px rgba(15, 23, 42, 0.05), 0 12px 24px -6px rgba(15, 23, 42, 0.06);
 
   /* Layout */
   --container-max: 1120px;
 
-  /* Typography Stacks */
-  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-serif: Georgia, "Times New Roman", serif;
+  /* Modern Web Typography */
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
 }
 
 /* Reduced Motion Override */
@@ -98,11 +99,12 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: var(--font-sans);
-  font-size: 16px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.55;
   color: var(--text);
   background-color: var(--canvas);
   -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.005em;
 }
 
 img, svg {
@@ -135,24 +137,27 @@ h1 {
   font-weight: 600;
   color: var(--text);
   margin: 0 0 6px 0;
+  letter-spacing: -0.015em;
 }
 
 h2 {
   font-family: var(--font-sans);
-  font-size: 20px;
-  line-height: 1.3;
+  font-size: 19px;
+  line-height: 1.35;
   font-weight: 600;
   color: var(--text);
   margin: 0 0 12px 0;
+  letter-spacing: -0.01em;
 }
 
 h3 {
   font-family: var(--font-sans);
-  font-size: 17px;
-  line-height: 1.35;
+  font-size: 16px;
+  line-height: 1.4;
   font-weight: 600;
   color: var(--text);
   margin: 0 0 8px 0;
+  letter-spacing: -0.005em;
 }
 
 p {
@@ -165,7 +170,7 @@ p:last-child {
 
 .muted-text {
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: 13.5px;
 }
 
 /* Layout Shell */
@@ -175,9 +180,11 @@ p:last-child {
   padding: 0 24px;
 }
 
-/* Header & Nav */
+/* Frosted Translucent Header */
 .site-header {
-  background-color: var(--surface);
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border-decor);
   position: sticky;
   top: 0;
@@ -204,19 +211,20 @@ p:last-child {
   width: 32px;
   height: 32px;
   border-radius: var(--radius-control);
-  background-color: var(--brand);
+  background: linear-gradient(135deg, #106F54 0%, #0D5C46 100%);
   color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 1px 3px rgba(13, 92, 70, 0.25);
   flex-shrink: 0;
 }
 
 .brand-title {
   font-family: var(--font-sans);
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   color: var(--text);
   line-height: 1;
 }
@@ -224,7 +232,7 @@ p:last-child {
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -235,10 +243,10 @@ p:last-child {
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
-  padding: 8px 14px;
+  padding: 7px 14px;
   border-radius: var(--radius-pill);
   transition: all 150ms ease;
-  min-height: 40px;
+  min-height: 38px;
   display: inline-flex;
   align-items: center;
 }
@@ -267,8 +275,9 @@ p:last-child {
   gap: 8px;
   padding: 4px 10px 4px 4px;
   border-radius: var(--radius-pill);
-  background-color: var(--surface-alt);
+  background-color: var(--surface);
   border: 1px solid var(--border-decor);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
 }
 
 .user-avatar {
@@ -286,7 +295,7 @@ p:last-child {
 }
 
 .user-name {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
   color: var(--text);
 }
@@ -295,6 +304,7 @@ p:last-child {
   display: inline-flex;
   align-items: center;
   font-size: 13px;
+  font-weight: 500;
   color: var(--text-muted);
   text-decoration: none;
   padding: 6px 12px;
@@ -342,7 +352,7 @@ button.mobile-nav-toggle {
 }
 
 .page-subtitle {
-  font-size: 14px;
+  font-size: 14.5px;
   color: var(--text-muted);
   margin: 0;
 }
@@ -352,14 +362,16 @@ button.mobile-nav-toggle {
   display: flex;
   align-items: center;
   gap: 12px;
-  background-color: var(--status-urgent-bg);
+  background: linear-gradient(90deg, #FEF2F2 0%, #FFF5F5 100%);
+  border: 1px solid #FECACA;
   border-left: 4px solid var(--status-urgent-text);
-  border-radius: 0 var(--radius-control) var(--radius-control) 0;
-  padding: 12px 16px;
+  border-radius: var(--radius-control);
+  padding: 12px 18px;
   font-size: 14px;
   color: var(--status-urgent-text);
   margin-bottom: 24px;
-  line-height: 1.4;
+  line-height: 1.45;
+  box-shadow: 0 1px 2px rgba(185, 28, 28, 0.04);
 }
 
 .emergency-banner svg {
@@ -404,7 +416,7 @@ button.mobile-nav-toggle {
   grid-column: span 12;
 }
 
-/* Card & Surface Containers */
+/* Card & Surface Containers with Layered Elevation */
 .card {
   background-color: var(--surface);
   border: 1px solid var(--border-decor);
@@ -413,6 +425,7 @@ button.mobile-nav-toggle {
   box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .card + .card {
@@ -420,13 +433,14 @@ button.mobile-nav-toggle {
 }
 
 .card-title {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 600;
   margin: 0 0 12px 0;
   color: var(--text);
+  letter-spacing: -0.01em;
 }
 
-/* Buttons */
+/* Buttons with Tactile Bevel */
 .button,
 button.button,
 button[type="submit"] {
@@ -434,36 +448,44 @@ button[type="submit"] {
   align-items: center;
   justify-content: center;
   font-family: var(--font-sans);
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 600;
   line-height: 1.2;
   text-decoration: none;
   border-radius: var(--radius-control);
-  padding: 10px 18px;
+  padding: 10px 20px;
   min-height: 44px;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+  transition: all 150ms ease;
 }
 
 .button.primary,
 button[type="submit"] {
-  background-color: var(--brand);
+  background: linear-gradient(180deg, #106F54 0%, #0D5C46 100%);
   color: #FFFFFF;
-  border-color: var(--brand);
+  border-color: #0A4A38;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 1px 3px rgba(13, 92, 70, 0.25);
 }
 
 .button.primary:hover,
 button[type="submit"]:hover {
-  background-color: var(--brand-hover);
-  border-color: var(--brand-hover);
+  background: linear-gradient(180deg, #0E5E47 0%, #094333 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 2px 6px rgba(13, 92, 70, 0.35);
   color: #FFFFFF;
+}
+
+.button.primary:active,
+button[type="submit"]:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .button.secondary {
   background-color: var(--surface);
   color: var(--text);
   border-color: var(--border-control);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .button.secondary:hover {
@@ -493,6 +515,7 @@ button[type="submit"]:hover {
 .button.danger:hover {
   background-color: #F87171;
   color: #FFFFFF;
+  border-color: #F87171;
 }
 
 .button.small {
@@ -508,7 +531,7 @@ button:disabled {
   pointer-events: none;
 }
 
-/* Forms & Inputs */
+/* Forms & Inputs with Inset Soft Tone */
 .stack-form {
   display: flex;
   flex-direction: column;
@@ -523,7 +546,7 @@ button:disabled {
 
 .input-label {
   display: block;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   color: var(--text);
 }
@@ -537,14 +560,14 @@ input[type="time"],
 select {
   width: 100%;
   font-family: var(--font-sans);
-  font-size: 15px;
+  font-size: 14.5px;
   line-height: 1.5;
   color: var(--text);
-  background-color: var(--surface);
+  background-color: #FAFBFC;
   border: 1.5px solid var(--border-control);
   border-radius: var(--radius-control);
   padding: 10px 14px;
-  transition: border-color 150ms ease;
+  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
 }
 
 textarea {
@@ -561,6 +584,7 @@ input::placeholder {
 textarea:focus,
 input:focus,
 select:focus {
+  background-color: #FFFFFF;
   border-color: var(--brand);
 }
 
@@ -570,16 +594,7 @@ select:focus {
   margin-top: 4px;
 }
 
-.form-error {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  color: var(--status-urgent-text);
-  margin-top: 4px;
-}
-
-/* Quick Add Chips (Strict Accessible Toggle Buttons) */
+/* Quick Add Chips (Tactile Pills with Soft Outline) */
 .quick-chips-wrapper {
   margin-bottom: 16px;
 }
@@ -608,12 +623,13 @@ button.chip-btn {
   color: var(--text) !important;
   border: 1.5px solid var(--border-control) !important;
   border-radius: var(--radius-pill);
-  padding: 8px 14px;
+  padding: 7px 14px;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  min-height: 44px;
-  transition: all 150ms ease;
+  min-height: 42px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .chip-btn svg {
@@ -625,6 +641,8 @@ button.chip-btn:hover {
   background-color: var(--brand-tint) !important;
   border-color: var(--brand) !important;
   color: var(--brand) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(13, 92, 70, 0.1);
 }
 
 .chip-btn[aria-pressed="true"],
@@ -633,15 +651,17 @@ button.chip-btn[aria-pressed="true"] {
   border-color: var(--brand) !important;
   color: var(--brand) !important;
   font-weight: 600;
+  box-shadow: inset 0 1px 2px rgba(13, 92, 70, 0.08);
 }
 
-/* Date Block (56px x 56px Calendar Badge) */
+/* Refined Calendar Date Block (58px x 60px) */
 .date-block {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-control);
-  background-color: var(--accent-tint);
-  border: 1px solid var(--border-decor);
+  width: 58px;
+  height: 60px;
+  border-radius: 10px;
+  background-color: var(--surface);
+  border: 1px solid #F1D4C3;
+  box-shadow: 0 1px 3px rgba(194, 94, 52, 0.08);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -655,23 +675,24 @@ button.chip-btn[aria-pressed="true"] {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 2px 0;
+  letter-spacing: 0.08em;
+  padding: 3px 0;
   line-height: 1.2;
 }
 
 .date-block-day {
   color: var(--accent-text);
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
+  background-color: var(--accent-tint);
 }
 
-/* Status Badges (Dot + Text, never color alone) */
+/* Status Badges (Dot + Text) */
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -746,7 +767,7 @@ button.chip-btn[aria-pressed="true"] {
   background: var(--surface);
   color: var(--brand);
   font-weight: 600;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
 }
 
 /* Appointment Snapshot & Card Items */
@@ -761,7 +782,7 @@ button.chip-btn[aria-pressed="true"] {
 }
 
 .doctor-name {
-  font-size: 16px;
+  font-size: 15.5px;
   font-weight: 600;
   color: var(--text);
   margin-bottom: 2px;
@@ -794,15 +815,18 @@ button.chip-btn[aria-pressed="true"] {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px;
+  padding: 18px 20px;
   border-radius: var(--radius-control);
   border: 1px solid var(--border-decor);
   background-color: var(--surface);
-  transition: border-color 150ms ease;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  transition: all 180ms ease;
 }
 
 .appointment-card:hover {
-  border-color: var(--border-control);
+  border-color: #CBD5E1;
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.05);
+  transform: translateY(-1px);
 }
 
 .appointment-card-body {
@@ -821,7 +845,7 @@ button.chip-btn[aria-pressed="true"] {
 /* Empty States */
 .empty-state {
   text-align: center;
-  padding: 32px 16px;
+  padding: 36px 20px;
   background-color: var(--surface-alt);
   border: 1px dashed var(--border-decor);
   border-radius: var(--radius-control);
@@ -845,8 +869,15 @@ button.chip-btn[aria-pressed="true"] {
   border: 1px solid var(--border-decor);
   border-left: 4px solid var(--brand);
   border-radius: var(--radius-control);
-  padding: 20px;
-  box-shadow: var(--shadow-sm);
+  padding: 22px 24px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: all 180ms ease;
+}
+
+.timeline-card:hover {
+  border-color: #CBD5E1;
+  border-left-color: var(--brand);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
 }
 
 .timeline-header {
@@ -877,16 +908,16 @@ button.chip-btn[aria-pressed="true"] {
 }
 
 .timeline-symptoms {
-  font-size: 15px;
+  font-size: 14.5px;
   color: var(--text);
   font-weight: 500;
 }
 
 .timeline-summary {
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--text-muted);
   background-color: var(--surface-alt);
-  padding: 10px 12px;
+  padding: 10px 14px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-decor);
 }
@@ -937,8 +968,15 @@ button.chip-btn[aria-pressed="true"] {
   background-color: var(--surface);
   border: 1px solid var(--border-decor);
   border-radius: var(--radius-control);
-  padding: 16px;
-  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: all 180ms ease;
+}
+
+.hospital-item:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  transform: translateY(-1px);
 }
 
 .hospital-item-header {
@@ -949,7 +987,7 @@ button.chip-btn[aria-pressed="true"] {
 }
 
 .hospital-item-title {
-  font-size: 16px;
+  font-size: 15.5px;
   font-weight: 600;
   color: var(--text);
   margin: 0;
@@ -985,6 +1023,7 @@ button.chip-btn[aria-pressed="true"] {
   background-color: var(--surface-alt);
   position: relative;
   z-index: 1;
+  box-shadow: var(--shadow-card);
 }
 
 .map-container-frame iframe,
@@ -1040,14 +1079,15 @@ dialog.confirm-dialog {
   border-radius: var(--radius-card);
   padding: 24px;
   background-color: var(--surface);
-  box-shadow: 0 8px 24px rgba(26, 34, 41, 0.15);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
   max-width: 440px;
   width: 90%;
   color: var(--text);
 }
 
 dialog.confirm-dialog::backdrop {
-  background: rgba(26, 34, 41, 0.4);
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
 }
 
 dialog.confirm-dialog h2 {
