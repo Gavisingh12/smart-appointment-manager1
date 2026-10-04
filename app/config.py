@@ -1,9 +1,13 @@
 import datetime
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env.local")
+load_dotenv(BASE_DIR / ".env")
+
 # Vercel Functions have a read-only deployment bundle. Only /tmp is writable
 # during a request, and production uses PostgreSQL rather than this local path.
 INSTANCE_DIR = (
