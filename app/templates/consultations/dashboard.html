@@ -5,51 +5,147 @@
 
 {% block content %}
   <header class="page-header">
-    <h1 id="dashboard-greeting" data-name="{{ current_user.greeting_name }}">Hello, {{ current_user.greeting_name }}</h1>
-    <p class="page-subtitle" id="dashboard-date">&nbsp;</p>
+    <div style="display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+      <div>
+        <h1 id="dashboard-greeting" data-name="{{ current_user.greeting_name }}">Hello, {{ current_user.greeting_name }}</h1>
+        <p class="page-subtitle" id="dashboard-date">&nbsp;</p>
+      </div>
+      <div class="quick-actions-bar" style="margin-bottom: 0;">
+        <a class="quick-action-pill" href="{{ url_for('main.appointment') }}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          + Book Visit
+        </a>
+        <a class="quick-action-pill" href="{{ url_for('main.history') }}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          Past Records
+        </a>
+        <a class="quick-action-pill" href="{{ url_for('main.hospital_locator') }}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+          Find Care
+        </a>
+      </div>
+    </div>
   </header>
 
+  <!-- 3 Stat Mini-Cards Grid (Eliminating Empty Space) -->
+  <section class="stat-grid" aria-label="Care Summary Overview">
+    <a class="stat-card" href="{{ url_for('main.appointment') }}">
+      <div class="stat-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Next Doctor Visit</div>
+        <div class="stat-value">{{ next_appointment.doctor if next_appointment else 'No visit booked' }}</div>
+        <div class="stat-meta">
+          {% if next_appointment %}
+            {{ next_appointment.date.strftime('%d %b') }} at {{ next_appointment.time }}
+          {% else %}
+            + Schedule an appointment
+          {% endif %}
+        </div>
+      </div>
+    </a>
+
+    <a class="stat-card" href="{{ url_for('main.history') }}">
+      <div class="stat-icon accent">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Consultation Notes</div>
+        <div class="stat-value">{{ consultation_count }} saved record{% if consultation_count != 1 %}s{% endif %}</div>
+        <div class="stat-meta" style="color: var(--accent-text);">Ready for doctor review</div>
+      </div>
+    </a>
+
+    <a class="stat-card" href="{{ url_for('main.hospital_locator') }}">
+      <div class="stat-icon neutral">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Emergency Care</div>
+        <div class="stat-value">Hospital Locator</div>
+        <div class="stat-meta" style="color: var(--text-muted);">Explore emergency centers</div>
+      </div>
+    </a>
+  </section>
+
+  <!-- Emergency Notice Banner -->
   <div class="emergency-banner" role="alert">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
     <span><strong>Emergency:</strong> If you have severe chest pain, breathing trouble, or heavy bleeding, call <a href="tel:112">112</a> immediately.</span>
   </div>
 
   <div class="grid-12">
-    <!-- Left 8 Columns: Symptom Intake -->
+    <!-- Left 8 Columns: Rich Symptom Intake Studio -->
     <div class="col-8">
       <section class="card" aria-labelledby="intake-title">
         <h2 id="intake-title">Describe what you are feeling</h2>
 
+        <!-- Categorized Quick Chips -->
         <div class="quick-chips-wrapper">
-          <span class="quick-chips-label">Common symptoms (tap to add):</span>
-          <div class="quick-chips" role="group" aria-label="Common symptoms">
-            <button type="button" class="chip-btn" data-symptom="Fever" aria-pressed="false">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
-              Fever
-            </button>
-            <button type="button" class="chip-btn" data-symptom="Headache" aria-pressed="false">Headache</button>
-            <button type="button" class="chip-btn" data-symptom="Cough" aria-pressed="false">Cough</button>
-            <button type="button" class="chip-btn" data-symptom="Sore throat" aria-pressed="false">Sore throat</button>
-            <button type="button" class="chip-btn" data-symptom="Fatigue" aria-pressed="false">Fatigue</button>
-            <button type="button" class="chip-btn" data-symptom="Body ache" aria-pressed="false">Body ache</button>
+          <div class="symptom-category-group">
+            <div class="symptom-category-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+              General Symptoms
+            </div>
+            <div class="quick-chips" role="group" aria-label="General symptoms">
+              <button type="button" class="chip-btn" data-symptom="Fever" aria-pressed="false">Fever</button>
+              <button type="button" class="chip-btn" data-symptom="Fatigue" aria-pressed="false">Fatigue</button>
+              <button type="button" class="chip-btn" data-symptom="Chills" aria-pressed="false">Chills</button>
+            </div>
+          </div>
+
+          <div class="symptom-category-group">
+            <div class="symptom-category-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path></svg>
+              Respiratory
+            </div>
+            <div class="quick-chips" role="group" aria-label="Respiratory symptoms">
+              <button type="button" class="chip-btn" data-symptom="Dry cough" aria-pressed="false">Dry cough</button>
+              <button type="button" class="chip-btn" data-symptom="Sore throat" aria-pressed="false">Sore throat</button>
+              <button type="button" class="chip-btn" data-symptom="Congestion" aria-pressed="false">Congestion</button>
+            </div>
+          </div>
+
+          <div class="symptom-category-group" style="margin-bottom: 0;">
+            <div class="symptom-category-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              Aches & Discomfort
+            </div>
+            <div class="quick-chips" role="group" aria-label="Pain symptoms">
+              <button type="button" class="chip-btn" data-symptom="Headache" aria-pressed="false">Headache</button>
+              <button type="button" class="chip-btn" data-symptom="Body ache" aria-pressed="false">Body ache</button>
+              <button type="button" class="chip-btn" data-symptom="Joint pain" aria-pressed="false">Joint pain</button>
+            </div>
           </div>
         </div>
 
-        <form id="diagnosisForm" method="post" class="stack-form">
+        <form id="diagnosisForm" method="post" class="stack-form" style="margin-top: 16px;">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          
+          <!-- Inset Clinical Guidance Bar -->
+          <div class="guidance-bar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand);" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <span><strong>Tip:</strong> Mention when symptoms started, their severity (mild/moderate/severe), and if any triggers worsen them.</span>
+          </div>
+
           <div class="form-group">
-            <label for="symptoms" class="input-label">Symptoms and observations</label>
+            <label for="symptoms" class="input-label">Detailed symptoms and observations</label>
             <textarea
               id="symptoms"
               name="symptoms"
-              rows="4"
-              placeholder="Describe your symptoms, when they started, and anything that makes them better or worse..."
+              rows="5"
+              placeholder="e.g. Started yesterday with a fever of 100.5°F, accompanied by a dry cough and mild headache. Worse in the evening..."
               required
             ></textarea>
-            <span class="form-hint" id="symptoms-hint">Be as specific as possible about timing and triggers.</span>
           </div>
-          <div class="button-row">
-            <button type="submit" class="button primary" id="prepare-summary-btn">Prepare my visit summary</button>
+          
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <button type="submit" class="button primary" id="prepare-summary-btn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Prepare my visit summary
+            </button>
+            <span class="muted-text" id="symptomWordCount">0 words logged</span>
           </div>
         </form>
 
@@ -70,7 +166,7 @@
       </section>
     </div>
 
-    <!-- Right 4 Columns: Context Cards -->
+    <!-- Right 4 Columns: Context & Preparation Cards -->
     <div class="col-4">
       <!-- Next Doctor Visit -->
       <section class="card" aria-labelledby="next-appointment-heading">
@@ -83,19 +179,41 @@
             </div>
             <div class="appointment-details">
               <div class="doctor-name">{{ next_appointment.doctor }}</div>
-              <div class="appointment-time">{{ next_appointment.date.strftime('%A, %d %B %Y') }} at {{ next_appointment.time }}</div>
+              <span class="doctor-specialty-badge">Attending Physician</span>
+              <div class="appointment-time" style="margin-top: 4px;">{{ next_appointment.date.strftime('%A, %d %B %Y') }} at {{ next_appointment.time }}</div>
               {% if next_appointment.notes %}
-                <div class="appointment-notes">{{ next_appointment.notes }}</div>
+                <div class="appointment-notes" style="margin-top: 8px;">{{ next_appointment.notes }}</div>
               {% endif %}
             </div>
           </div>
+
+          <!-- Pre-Visit Preparation Checklist -->
+          <div class="checklist-widget">
+            <div class="checklist-title">Visit Preparation Checklist</div>
+            <div class="checklist-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Bring blood pressure readings</span>
+            </div>
+            <div class="checklist-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Previous medication list</span>
+            </div>
+            <div class="checklist-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Prepared discussion points</span>
+            </div>
+          </div>
+
           <div style="margin-top: 16px;">
             <a class="button ghost small" href="{{ url_for('main.appointment') }}">Manage appointments &rarr;</a>
           </div>
         {% else %}
           <div class="empty-state">
+            <div class="stat-icon" style="margin: 0 auto 12px auto;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            </div>
             <p>You have no upcoming doctor visits scheduled.</p>
-            <a class="button secondary small" href="{{ url_for('main.appointment') }}">+ Schedule a visit</a>
+            <a class="button primary small" href="{{ url_for('main.appointment') }}">+ Schedule a visit</a>
           </div>
         {% endif %}
       </section>
@@ -107,10 +225,13 @@
           <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">
             <strong>Recorded:</strong> {{ latest_consultation.timestamp.strftime('%d %b %Y, %I:%M %p') }}
           </div>
-          <p style="font-size: 14px; margin-bottom: 16px; line-height: 1.4;">{{ latest_consultation.symptoms|truncate(120) }}</p>
+          <p style="font-size: 14px; margin-bottom: 16px; line-height: 1.45;">{{ latest_consultation.symptoms|truncate(120) }}</p>
           <a class="button ghost small" href="{{ url_for('main.history') }}">View all past notes &rarr;</a>
         {% else %}
           <div class="empty-state">
+            <div class="stat-icon accent" style="margin: 0 auto 12px auto;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            </div>
             <p>Your saved consultation notes will appear here once prepared.</p>
             <a class="button secondary small" href="{{ url_for('main.history') }}">Open past notes</a>
           </div>

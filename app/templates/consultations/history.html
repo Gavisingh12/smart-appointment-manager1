@@ -9,25 +9,70 @@
 
 {% block content %}
   <header class="page-header">
-    <h1>Past Consultation Notes</h1>
-    <p class="page-subtitle">Track your symptom notes over time and export summaries for your doctor visits.</p>
+    <div style="display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+      <div>
+        <h1>Past Consultation Notes</h1>
+        <p class="page-subtitle">Track your symptom notes over time and export summaries for your doctor visits.</p>
+      </div>
+      <div>
+        <a class="button primary small" href="{{ url_for('main.dashboard') }}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          + Prepare New Note
+        </a>
+      </div>
+    </div>
   </header>
 
-  {% if chart_labels %}
-    <section class="card chart-card" aria-labelledby="activity-heading">
+  <!-- 2-Column Balanced Overview (Replaces the Barren Stretched Chart) -->
+  <div class="history-hero-grid">
+    <!-- Left 7 Columns: Compact Trend Chart -->
+    <section class="card" aria-labelledby="activity-heading" style="margin: 0;">
       <h2 id="activity-heading" class="card-title">Consultation Activity Over Time</h2>
-      <div class="chart-wrapper">
-        <canvas id="historyChart" aria-label="Line chart showing consultation activity over dates" role="img"></canvas>
-      </div>
-      <p class="form-hint" style="margin-top: 8px; text-align: right;">Total records recorded: {{ total_consultations }}</p>
+      {% if chart_labels %}
+        <div class="chart-wrapper">
+          <canvas id="historyChart" aria-label="Line chart showing consultation activity over dates" role="img"></canvas>
+        </div>
+      {% else %}
+        <div class="empty-state" style="padding: 24px;">
+          <p>No activity trends recorded yet.</p>
+        </div>
+      {% endif %}
     </section>
-  {% endif %}
 
+    <!-- Right 5 Columns: Clinical Records Summary Card -->
+    <section class="card" aria-labelledby="summary-stats-heading" style="margin: 0; justify-content: space-between;">
+      <div>
+        <h2 id="summary-stats-heading" class="card-title">Clinical Records Summary</h2>
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--border-decor); padding-bottom: 8px;">
+            <span class="muted-text">Total Saved Records</span>
+            <strong style="font-size: 18px; color: var(--brand);">{{ total_consultations }}</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--border-decor); padding-bottom: 8px;">
+            <span class="muted-text">Latest Entry</span>
+            <strong style="font-size: 14px; color: var(--text);">{{ most_recent.strftime('%d %b %Y') if most_recent else 'None' }}</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <span class="muted-text">PDF Export Status</span>
+            <span class="status-badge confirmed">Ready for Doctor</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 18px; background-color: var(--surface-alt); border: 1px solid var(--border-decor); border-radius: var(--radius-sm); padding: 12px;">
+        <span style="font-size: 12.5px; color: var(--text-muted); display: block;">
+          📄 Download complete doctor summaries with symptom history and discussion points before your next clinic appointment.
+        </span>
+      </div>
+    </section>
+  </div>
+
+  <!-- Timeline Cards Section -->
   <section class="card" aria-labelledby="history-records-heading">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
       <h2 id="history-records-heading" style="margin: 0;">Consultation timeline</h2>
       {% if consultations %}
-        <span class="muted-text">{{ consultations|length }} note{% if consultations|length != 1 %}s{% endif %} saved</span>
+        <span class="muted-text">{{ consultations|length }} note{% if consultations|length != 1 %}s{% endif %} recorded</span>
       {% endif %}
     </div>
 
@@ -58,12 +103,12 @@
             </header>
             <div class="timeline-body">
               <div>
-                <strong style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); display: block; margin-bottom: 2px;">Reported symptoms</strong>
+                <strong style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); display: block; margin-bottom: 4px;">Reported symptoms</strong>
                 <p class="timeline-symptoms">{{ consultation.symptoms }}</p>
               </div>
               {% if consultation.summary %}
                 <div>
-                  <strong style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); display: block; margin-bottom: 4px;">Summary / discussion points</strong>
+                  <strong style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); display: block; margin-bottom: 4px;">Summary / discussion points</strong>
                   <div class="timeline-summary">{{ consultation.summary }}</div>
                 </div>
               {% endif %}
@@ -73,8 +118,11 @@
       </div>
     {% else %}
       <div class="empty-state">
+        <div class="stat-icon accent" style="margin: 0 auto 12px auto;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+        </div>
         <p>You have not recorded any consultation notes yet.</p>
-        <a class="button secondary small" href="{{ url_for('main.dashboard') }}">Prepare a visit summary</a>
+        <a class="button primary small" href="{{ url_for('main.dashboard') }}">Prepare a visit summary</a>
       </div>
     {% endif %}
   </section>

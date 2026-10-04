@@ -9,14 +9,25 @@
     <p class="page-subtitle">Search by city to locate medical facilities, emergency departments, and specialty care centers.</p>
   </header>
 
-  <!-- City Search Card -->
+  <!-- City Search Card with Quick City Suggestion Pills -->
   <section class="card locator-search-card" aria-labelledby="locator-search-heading">
     <h2 id="locator-search-heading" class="card-title">Search medical centers</h2>
     <form method="get" class="locator-search-form" action="{{ url_for('main.hospital_locator') }}">
       <label for="city-input" class="sr-only" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;">City name</label>
-      <input type="text" id="city-input" name="city" value="{{ city }}" placeholder="Enter city (e.g. London, Mumbai, New York)" required>
-      <button type="submit" class="button primary">Search city</button>
+      <input type="text" id="city-input" name="city" value="{{ city }}" placeholder="Enter city (e.g. London, Mumbai, New York, Delhi)" required>
+      <button type="submit" class="button primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        Search city
+      </button>
     </form>
+
+    <div style="display: flex; align-items: center; gap: 8px; margin-top: 14px; flex-wrap: wrap;">
+      <span class="muted-text" style="font-size: 12.5px;">Popular cities:</span>
+      <a class="chip-btn" style="min-height: 32px; padding: 4px 10px; font-size: 12px; text-decoration: none;" href="{{ url_for('main.hospital_locator', city='London') }}">London</a>
+      <a class="chip-btn" style="min-height: 32px; padding: 4px 10px; font-size: 12px; text-decoration: none;" href="{{ url_for('main.hospital_locator', city='Mumbai') }}">Mumbai</a>
+      <a class="chip-btn" style="min-height: 32px; padding: 4px 10px; font-size: 12px; text-decoration: none;" href="{{ url_for('main.hospital_locator', city='New York') }}">New York</a>
+      <a class="chip-btn" style="min-height: 32px; padding: 4px 10px; font-size: 12px; text-decoration: none;" href="{{ url_for('main.hospital_locator', city='Delhi') }}">Delhi</a>
+    </div>
   </section>
 
   {% if hospital_cards %}
@@ -32,11 +43,18 @@
               {% endif %}
             </div>
             <div class="hospital-item-type">{{ hospital.type }}</div>
-            <div class="hospital-item-hours">{{ hospital.hours }}</div>
-            <div>
+            <div class="hospital-item-hours">
+              {% if '24/7' in hospital.hours %}
+                <span class="live-dot"></span>
+              {% else %}
+                <span class="live-dot warning"></span>
+              {% endif %}
+              {{ hospital.hours }}
+            </div>
+            <div style="margin-top: 10px;">
               <a class="button secondary small" href="https://www.google.com/maps/search/?api=1&query={{ hospital.coords[0] }},{{ hospital.coords[1] }}" target="_blank" rel="noopener noreferrer">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;" aria-hidden="true"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-                Open in Maps
+                Directions in Maps
               </a>
             </div>
           </article>
@@ -56,6 +74,9 @@
     </div>
   {% else %}
     <div class="empty-state">
+      <div class="stat-icon neutral" style="margin: 0 auto 12px auto;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+      </div>
       <p>{% if city %}No hospital centers found for "{{ city }}". Please check spelling or try another city.{% else %}Search a city above to explore nearby care centers, emergency facilities, and interactive coverage maps.{% endif %}</p>
     </div>
   {% endif %}

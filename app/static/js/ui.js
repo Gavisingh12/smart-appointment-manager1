@@ -73,8 +73,20 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    symptomInput.addEventListener("input", updateChipStates);
+    const wordCountEl = document.getElementById("symptomWordCount");
+    const updateWordCount = () => {
+      if (!wordCountEl) return;
+      const text = symptomInput.value.trim();
+      const words = text ? text.split(/\s+/).length : 0;
+      wordCountEl.textContent = `${words} word${words !== 1 ? 's' : ''} logged`;
+    };
+
+    symptomInput.addEventListener("input", () => {
+      updateChipStates();
+      updateWordCount();
+    });
     updateChipStates();
+    updateWordCount();
   }
 
   // 3. Mobile Navigation Menu Toggle
