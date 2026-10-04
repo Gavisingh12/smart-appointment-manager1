@@ -803,11 +803,12 @@ select {
   font-size: 14.5px;
   line-height: 1.5;
   color: var(--text);
-  background-color: #FAFBFC;
-  border: 1.5px solid var(--border-control);
+  background-color: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
   border-radius: var(--radius-control);
   padding: 10px 14px;
-  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  transition: all 150ms ease;
 }
 
 textarea {
@@ -826,6 +827,13 @@ input:focus,
 select:focus {
   background-color: #FFFFFF;
   border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(13, 92, 70, 0.12), 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.form-row-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
 .form-hint {
@@ -1086,15 +1094,156 @@ button.chip-btn[aria-pressed="true"] {
 .empty-state {
   text-align: center;
   padding: 36px 20px;
-  background-color: var(--surface-alt);
-  border: 1px dashed var(--border-decor);
-  border-radius: var(--radius-control);
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAFBFC 100%);
+  border: 1px solid var(--border-decor);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
 }
 
 .empty-state p {
   color: var(--text-muted);
   font-size: 14px;
   margin-bottom: 16px;
+}
+
+/* Appointment Empty Hub (Modern Clinical Onboarding) */
+.appointment-empty-hub {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAFBFC 100%);
+  border: 1px solid var(--border-decor);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.empty-hub-hero {
+  text-align: center;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.empty-hub-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 12px auto;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--brand-tint) 0%, #D1E7DD 100%);
+  color: var(--brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(13, 92, 70, 0.12);
+}
+
+.empty-hub-title {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 6px 0;
+  letter-spacing: -0.01em;
+}
+
+.empty-hub-desc {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.empty-hub-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.empty-step-card {
+  background: var(--surface);
+  border: 1px solid var(--border-decor);
+  border-radius: var(--radius-control);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 180ms ease;
+}
+
+.empty-step-card:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+  transform: translateY(-1px);
+}
+
+.empty-step-num {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--brand);
+  background: var(--brand-tint);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  width: fit-content;
+}
+
+.empty-step-content strong {
+  display: block;
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.empty-step-content p {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.empty-hub-presets {
+  border-top: 1px solid var(--border-decor);
+  padding-top: 14px;
+}
+
+.empty-presets-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.empty-presets-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.preset-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border-decor);
+  border-radius: var(--radius-pill);
+  padding: 6px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 150ms ease;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+
+.preset-chip:hover {
+  background: var(--brand-tint);
+  border-color: var(--brand);
+  color: var(--brand);
+  transform: translateY(-1px);
 }
 
 /* History Timeline Notes */

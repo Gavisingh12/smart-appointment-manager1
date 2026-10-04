@@ -22,7 +22,7 @@
       <div class="stat-content">
         <div class="stat-label">Upcoming Visits</div>
         <div class="stat-value">{{ upcoming_count }} scheduled</div>
-        <div class="stat-meta">Next visit on {{ next_appointment.date.strftime('%d %b') if next_appointment else 'None' }}</div>
+        <div class="stat-meta">{% if next_appointment %}Next visit on {{ next_appointment.date.strftime('%d %b') }}{% else %}No visits scheduled{% endif %}</div>
       </div>
     </div>
 
@@ -32,8 +32,8 @@
       </div>
       <div class="stat-content">
         <div class="stat-label">Primary Doctor</div>
-        <div class="stat-value">{{ next_appointment.doctor if next_appointment else 'No doctor set' }}</div>
-        <div class="stat-meta" style="color: var(--accent-text);">Consultant Physician</div>
+        <div class="stat-value">{{ next_appointment.doctor if next_appointment else 'No doctor assigned' }}</div>
+        <div class="stat-meta" style="color: var(--accent-text);">{% if next_appointment %}Attending Physician{% else %}Assign during scheduling{% endif %}</div>
       </div>
     </div>
 
@@ -44,7 +44,7 @@
       <div class="stat-content">
         <div class="stat-label">Timeline Status</div>
         <div class="stat-value">{{ appointments|length }} total record{% if appointments|length != 1 %}s{% endif %}</div>
-        <div class="stat-meta" style="color: var(--text-muted);">Organized chronologically</div>
+        <div class="stat-meta" style="color: var(--text-muted);">{% if appointments %}Organized chronologically{% else %}Timeline ready for booking{% endif %}</div>
       </div>
     </div>
   </section>
@@ -111,12 +111,57 @@
             {% endfor %}
           </div>
         {% else %}
-          <div class="empty-state">
-            <div class="stat-icon" style="margin: 0 auto 12px auto;">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          <div class="appointment-empty-hub">
+            <div class="empty-hub-hero">
+              <div class="empty-hub-icon">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg>
+              </div>
+              <h3 class="empty-hub-title">Your Consultation Timeline is Open</h3>
+              <p class="empty-hub-desc">
+                Schedule your upcoming appointments to maintain an organized clinical history, set visit agendas, and ensure your doctor answers your critical health questions.
+              </p>
             </div>
-            <p><strong>No clinic visits scheduled.</strong></p>
-            <p class="muted-text">Use the form on the right to log your upcoming doctor appointment, set your clinic agenda, and prepare your discussion points.</p>
+
+            <!-- 3 Clinical Step Guides -->
+            <div class="empty-hub-steps">
+              <div class="empty-step-card">
+                <span class="empty-step-num">Step 1</span>
+                <div class="empty-step-content">
+                  <strong>Choose Slot & Doctor</strong>
+                  <p>Pick your clinic visit date, preferred time, and attending physician.</p>
+                </div>
+              </div>
+              <div class="empty-step-card">
+                <span class="empty-step-num">Step 2</span>
+                <div class="empty-step-content">
+                  <strong>Set Visit Agenda</strong>
+                  <p>List symptoms, prescription refill requests, or lab questions.</p>
+                </div>
+              </div>
+              <div class="empty-step-card">
+                <span class="empty-step-num">Step 3</span>
+                <div class="empty-step-content">
+                  <strong>Review & Prepare</strong>
+                  <p>Bring your structured discussion points directly to your doctor.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Template Fillers -->
+            <div class="empty-hub-presets">
+              <span class="empty-presets-label">⚡ Quick Consultation Templates (Click to fill form):</span>
+              <div class="empty-presets-chips">
+                <button type="button" class="preset-chip" data-doctor="Dr. Alistair Sharma (Cardiology)" data-notes="Routine cardiovascular review, blood pressure medication check, discuss occasional palpitations.">
+                  🩺 Cardiology Review
+                </button>
+                <button type="button" class="preset-chip" data-doctor="Dr. Sarah Jenkins (General Practice)" data-notes="Annual wellness examination, review seasonal allergies, update vaccination records.">
+                  📋 Annual Wellness Exam
+                </button>
+                <button type="button" class="preset-chip" data-doctor="Dr. Marcus Vance (Pulmonology)" data-notes="Follow-up on persistent dry cough, review chest x-ray results, inhaler prescription refill.">
+                  🫁 Pulmonology Follow-Up
+                </button>
+              </div>
+            </div>
           </div>
         {% endif %}
       </section>
@@ -125,18 +170,23 @@
     <!-- Right 4 Columns: New Appointment Booking Card + Visit Prep -->
     <div class="col-4 sticky-sidebar">
       <section class="card" aria-labelledby="new-appointment-heading">
-        <h2 id="new-appointment-heading" class="card-title">Schedule Doctor Visit</h2>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px;">
+          <h2 id="new-appointment-heading" class="card-title" style="margin: 0;">Schedule Doctor Visit</h2>
+          <span class="status-badge neutral" style="font-size: 11px;">Clinic Slot</span>
+        </div>
         <form method="post" class="stack-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           
-          <div class="form-group">
-            <label for="app-date" class="input-label">Appointment date</label>
-            <input type="date" id="app-date" name="date" min="{{ today_iso }}" required>
-          </div>
+          <div class="form-row-split">
+            <div class="form-group">
+              <label for="app-date" class="input-label">Date</label>
+              <input type="date" id="app-date" name="date" min="{{ today_iso }}" required>
+            </div>
 
-          <div class="form-group">
-            <label for="app-time" class="input-label">Consultation time</label>
-            <input type="time" id="app-time" name="time" required>
+            <div class="form-group">
+              <label for="app-time" class="input-label">Time</label>
+              <input type="time" id="app-time" name="time" required>
+            </div>
           </div>
 
           <div class="form-group">
@@ -156,7 +206,7 @@
         </form>
 
         <!-- Preparation Tips Box -->
-        <div class="checklist-widget" style="margin-top: 20px;">
+        <div class="checklist-widget" style="margin-top: 18px;">
           <div class="checklist-title">Pre-Visit Clinical Checklist</div>
           <div class="checklist-item">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -177,11 +227,46 @@
 
   <!-- Accessible Remove Confirmation Dialog -->
   <dialog id="deleteAppointmentDialog" class="confirm-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-desc">
-    <h2 id="dialog-title">Remove appointment</h2>
-    <p id="dialog-desc">Are you sure you want to remove this appointment with <strong id="dialog-doctor-name"></strong> on <span id="dialog-appointment-date"></span>? This cannot be undone.</p>
+    <h2 id="dialog-title">Cancel appointment</h2>
+    <p id="dialog-desc">Are you sure you want to cancel this visit with <strong id="dialog-doctor-name"></strong> on <span id="dialog-appointment-date"></span>? This action cannot be undone.</p>
     <div class="dialog-actions">
       <button type="button" class="button secondary small" id="cancelDialogBtn">Keep appointment</button>
-      <button type="button" class="button danger small" id="confirmDeleteBtn">Remove</button>
+      <button type="button" class="button danger small" id="confirmDeleteBtn">Cancel visit</button>
     </div>
   </dialog>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const presetChips = document.querySelectorAll(".preset-chip");
+      const doctorInput = document.getElementById("app-doctor");
+      const notesInput = document.getElementById("app-notes");
+      const dateInput = document.getElementById("app-date");
+      const timeInput = document.getElementById("app-time");
+
+      presetChips.forEach(chip => {
+        chip.addEventListener("click", () => {
+          if (doctorInput && chip.dataset.doctor) {
+            doctorInput.value = chip.dataset.doctor;
+          }
+          if (notesInput && chip.dataset.notes) {
+            notesInput.value = chip.dataset.notes;
+          }
+          if (dateInput && !dateInput.value) {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            dateInput.value = tomorrow.toISOString().split("T")[0];
+          }
+          if (timeInput && !timeInput.value) {
+            timeInput.value = "10:30";
+          }
+          if (doctorInput) {
+            doctorInput.focus();
+            doctorInput.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        });
+      });
+    });
+  </script>
 {% endblock %}
