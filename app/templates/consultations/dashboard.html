@@ -1,170 +1,117 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard | {{ app_name }}{% endblock %}
-{% block meta_description %}Private care dashboard for symptom analysis, appointments, saved reports, and hospital search.{% endblock %}
-{% block page_heading %}Your care dashboard{% endblock %}
+{% block title %}Dashboard | CareCompass{% endblock %}
+{% block meta_description %}Private care dashboard for symptom intake and appointment preparation.{% endblock %}
 
 {% block content %}
-  <section class="workspace-hero premium-surface">
-    <div class="workspace-hero-copy">
-      <span class="eyebrow">Welcome back</span>
-      <h1>Hello, {{ current_user.greeting_name }}</h1>
-      <p class="section-copy">
-        Describe symptoms, review saved consultations, plan visits,
-        and keep your health information together in one place.
-      </p>
-      <div class="hero-badges">
-        <span>Saved history</span>
-        <span>Appointments</span>
-        <span>Nearby hospitals</span>
-        <span>PDF reports</span>
-      </div>
-    </div>
+  <div class="dashboard-header">
+    <h1 id="dashboard-greeting" data-name="{{ current_user.greeting_name }}">Hello, {{ current_user.greeting_name }}</h1>
+    <p class="dashboard-date" id="dashboard-date">&nbsp;</p>
+  </div>
 
-    <div class="hero-score-card">
-      <span class="eyebrow">Care activity</span>
-      <div class="score-ring" style="--score: {{ activity_score }}">
-        <div>
-          <strong>{{ activity_score }}</strong>
-          <small>/ 100</small>
-        </div>
-      </div>
-      <p>This score grows as you save consultations and manage your next appointments.</p>
-    </div>
-  </section>
+  <div class="emergency-banner" role="alert">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+    <span><strong>Emergency:</strong> If you have severe chest pain, breathing trouble, or heavy bleeding, call 112 immediately.</span>
+  </div>
 
-  <section class="metric-grid enhanced-metrics">
-    <article class="metric-card">
-      <span>Total consultations</span>
-      <strong>{{ consultation_count }}</strong>
-      <small>All saved activity</small>
-    </article>
-    <article class="metric-card">
-      <span>Upcoming appointments</span>
-      <strong>{{ appointment_count }}</strong>
-      <small>Scheduled patient interactions</small>
-    </article>
-    <article class="metric-card">
-      <span>Active days</span>
-      <strong>{{ active_days }}</strong>
-      <small>Days with stored consultations</small>
-    </article>
-    <article class="metric-card">
-      <span>Support mode</span>
-      <strong>{{ 'Enhanced' if system_status.ai.enabled else 'Standard' }}</strong>
-      <small>{{ 'More detailed responses are available' if system_status.ai.enabled else 'Helpful guidance still works in standard mode' }}</small>
-    </article>
-  </section>
+  <div class="grid-12">
+    <!-- Left 8 Columns: Symptom Intake -->
+    <div class="col-8">
+      <section class="card" aria-labelledby="intake-title">
+        <h2 id="intake-title">Describe what you are feeling</h2>
 
-  <section class="dashboard-grid dashboard-grid-advanced">
-    <article class="panel composer-panel glass-panel">
-        <div class="panel-head">
-          <div>
-            <span class="eyebrow">Consultation intake</span>
-            <h2>Describe your symptoms</h2>
-          </div>
-          <span class="mini-status">Guided response</span>
-        </div>
-      <form id="diagnosisForm" method="post" class="stack-form">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <label>
-          <span>Symptom description</span>
-          <textarea id="symptoms" name="symptoms" rows="7" placeholder="Example: I have had a fever, sore throat, fatigue, and mild body ache for 2 days..." required></textarea>
-        </label>
-        <div class="button-row compact">
-          <button type="submit" class="button primary">Generate consultation analysis</button>
-          <a class="button ghost" href="{{ url_for('main.followup') }}">Continue last follow-up</a>
-        </div>
-      </form>
-      <div id="diagnosisFeedback" class="status-inline hidden">Working on your analysis...</div>
-    </article>
-
-    <div class="dashboard-side-stack">
-      <article class="panel">
-        <div class="panel-head">
-          <div>
-            <span class="eyebrow">Next appointment</span>
-            <h2>Schedule snapshot</h2>
+        <div class="quick-chips-wrapper">
+          <span class="quick-chips-label">Common symptoms (tap to add):</span>
+          <div class="quick-chips" role="group" aria-label="Quick symptom tags">
+            <button type="button" class="chip-btn" data-symptom="Fever">Fever</button>
+            <button type="button" class="chip-btn" data-symptom="Headache">Headache</button>
+            <button type="button" class="chip-btn" data-symptom="Cough">Cough</button>
+            <button type="button" class="chip-btn" data-symptom="Sore throat">Sore throat</button>
+            <button type="button" class="chip-btn" data-symptom="Fatigue">Fatigue</button>
+            <button type="button" class="chip-btn" data-symptom="Body ache">Body ache</button>
           </div>
         </div>
+
+        <form id="diagnosisForm" method="post" class="stack-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div>
+            <label for="symptoms" class="input-label">Symptoms and observations</label>
+            <textarea
+              id="symptoms"
+              name="symptoms"
+              rows="4"
+              placeholder="Describe your symptoms, when they started, and anything that makes them better or worse..."
+              required
+            ></textarea>
+          </div>
+          <div class="button-row">
+            <button type="submit" class="button primary">Prepare my visit summary</button>
+          </div>
+        </form>
+
+        <div id="diagnosisFeedback" class="status-inline hidden" role="status" aria-live="polite">
+          Preparing your visit discussion points...
+        </div>
+
+        <div class="privacy-note">
+          <p><strong>Your notes are only visible when you're signed in.</strong></p>
+          <p class="ai-disclosure">When AI guidance is enabled, symptom descriptions are processed via Google Gemini to generate discussion points. In standard demo mode, notes are processed locally on this server.</p>
+        </div>
+      </section>
+
+      <!-- Asynchronous Analysis Result Container -->
+      <section class="card hidden" id="diagnosis-result-container" aria-live="polite" style="margin-top: 24px;">
+        <h2 class="card-title">Prepared Doctor Discussion Points</h2>
+        <div id="diagnosis-result-content"></div>
+      </section>
+    </div>
+
+    <!-- Right 4 Columns: Context Cards -->
+    <div class="col-4">
+      <!-- Next Doctor Visit -->
+      <section class="card" aria-labelledby="next-appointment-heading">
+        <h2 id="next-appointment-heading" class="card-title">Next doctor visit</h2>
         {% if next_appointment %}
-          <div class="snapshot-card">
-            <strong>{{ next_appointment.doctor }}</strong>
-            <p>{{ next_appointment.date.strftime('%d %b %Y') }} at {{ next_appointment.time }}</p>
-            <small>{{ next_appointment.notes or 'No notes added yet.' }}</small>
+          <div class="appointment-snapshot">
+            <div class="date-block" aria-hidden="true">
+              <span class="day-num">{{ next_appointment.date.strftime('%d') }}</span>
+              <span class="month-str">{{ next_appointment.date.strftime('%b') }}</span>
+            </div>
+            <div class="appointment-details">
+              <div class="doctor-name">{{ next_appointment.doctor }}</div>
+              <div class="appointment-time">{{ next_appointment.date.strftime('%A, %d %B %Y') }} at {{ next_appointment.time }}</div>
+              {% if next_appointment.notes %}
+                <div class="appointment-notes">{{ next_appointment.notes }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div style="margin-top: 16px;">
+            <a class="button ghost small" href="{{ url_for('main.appointment') }}">Manage appointments &rarr;</a>
           </div>
         {% else %}
-          <p class="section-copy">No upcoming appointment is scheduled yet.</p>
+          <div class="empty-card-state">
+            <p>You have no upcoming doctor visits scheduled.</p>
+            <a class="button secondary small" href="{{ url_for('main.appointment') }}">+ Schedule a visit</a>
+          </div>
         {% endif %}
-      </article>
+      </section>
 
-      <article class="panel">
-        <div class="panel-head">
-          <div>
-            <span class="eyebrow">Quick highlights</span>
-            <h2>Your account summary</h2>
-          </div>
-        </div>
-        <div class="highlight-list">
-          {% for item in workspace_highlights %}
-            <article class="highlight-item tone-{{ item.tone }}">
-              <strong>{{ item.title }}</strong>
-              <p>{{ item.value }}</p>
-            </article>
-          {% endfor %}
-        </div>
-      </article>
-
-      <article class="panel">
-        <div class="panel-head">
-          <div>
-            <span class="eyebrow">Last update</span>
-            <h2>Recent consultation</h2>
-          </div>
-        </div>
+      <!-- Recent Consultation Note -->
+      <section class="card" aria-labelledby="recent-note-heading">
+        <h2 id="recent-note-heading" class="card-title">Recent consultation note</h2>
         {% if latest_consultation %}
-          <p class="section-copy">{{ latest_consultation.symptoms }}</p>
-          <a class="button ghost small" href="{{ url_for('main.history') }}">Open full history</a>
+          <p style="font-size: 14px; margin-bottom: 8px;"><strong>Recorded:</strong> {{ latest_consultation.timestamp.strftime('%d %b %Y, %I:%M %p') }}</p>
+          <p class="muted-text" style="margin-bottom: 16px;">{{ latest_consultation.symptoms|truncate(120) }}</p>
+          <a class="button ghost small" href="{{ url_for('main.history') }}">View all past notes &rarr;</a>
         {% else %}
-          <p class="section-copy">Generate your first consultation to start building the activity timeline.</p>
+          <div class="empty-card-state">
+            <p>Your saved consultation notes will appear here once prepared.</p>
+            <a class="button secondary small" href="{{ url_for('main.history') }}">Open past notes</a>
+          </div>
         {% endif %}
-      </article>
+      </section>
     </div>
-  </section>
-
-  <section class="panel result-panel premium-surface" id="diagnosis-result-container">
-    <div class="panel-head">
-      <div>
-        <span class="eyebrow">Analysis output</span>
-        <h2>Your AI medical analysis will appear here</h2>
-      </div>
-    </div>
-    <div id="diagnosis-result-content">
-      <p class="section-copy">Your result will appear here as soon as the analysis is ready.</p>
-    </div>
-  </section>
-
-  <section class="panel">
-    <div class="panel-head">
-      <div>
-        <span class="eyebrow">Recent activity</span>
-        <h2>Latest consultations</h2>
-      </div>
-    </div>
-    {% if recent_consultations %}
-      <div class="activity-grid">
-        {% for item in recent_consultations %}
-          <article class="activity-card">
-            <small>{{ item.timestamp.strftime('%d %b %Y, %I:%M %p') }}</small>
-            <strong>{{ item.symptoms }}</strong>
-            <p>{{ item.summary }}</p>
-          </article>
-        {% endfor %}
-      </div>
-    {% else %}
-      <p class="section-copy">No consultations yet. Start with the symptom intake panel above.</p>
-    {% endif %}
-  </section>
+  </div>
 {% endblock %}
 
 {% block scripts %}

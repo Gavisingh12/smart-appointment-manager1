@@ -3,146 +3,85 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    {% set seo_title %}{% block title %}{{ app_name }}{% endblock %}{% endset %}
+    {% set seo_title %}{% block title %}CareCompass{% endblock %}{% endset %}
     {% set seo_description %}{% block meta_description %}{{ seo_default_description }}{% endblock %}{% endset %}
     <title>{{ seo_title|trim }}</title>
     <meta name="description" content="{{ seo_description|trim }}">
-    <meta name="theme-color" content="#07131d">
+    <meta name="theme-color" content="#F7F2EA">
     <meta property="og:type" content="website">
     <meta property="og:title" content="{{ seo_title|trim }}">
     <meta property="og:description" content="{{ seo_description|trim }}">
     <meta property="og:url" content="{{ canonical_url }}">
-    <meta property="og:image" content="{{ social_image_url }}">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ seo_title|trim }}">
-    <meta name="twitter:description" content="{{ seo_description|trim }}">
-    <meta name="twitter:image" content="{{ social_image_url }}">
     <link rel="canonical" href="{{ canonical_url }}">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='brand/favicon.svg') }}">
     <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
-    <script type="application/ld+json">
-      {{ {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": app_name,
-        "url": canonical_url,
-        "description": seo_description|trim,
-        "applicationCategory": "HealthApplication",
-        "operatingSystem": "Any",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
-        }
-      } | tojson }}
-    </script>
     {% block head %}{% endblock %}
   </head>
   {% set is_authenticated = current_user.is_authenticated %}
-  <body class="{% block body_class %}app-body{% endblock %}{% if is_authenticated %} authenticated-body{% endif %}">
+  <body class="{% block body_class %}{% endblock %}">
+    <header class="site-header">
+      <div class="site-container nav-shell">
+        <a class="brand-lockup" href="{{ url_for('main.dashboard') if is_authenticated else url_for('main.home') }}">
+          <span class="brand-icon" aria-hidden="true">C</span>
+          <span class="brand-title">CareCompass</span>
+        </a>
 
-    {% if is_authenticated %}
-      <div class="workspace-frame">
-        <aside class="app-rail">
-          <div class="rail-brand">
-            <a class="brand-lockup" href="{{ url_for('main.dashboard') }}">
-              <span class="brand-mark">C</span>
-              <span>
-                <strong>{{ app_name }}</strong>
-                <small>{{ brand_tagline }}</small>
-              </span>
-            </a>
-          </div>
-
-          <nav class="rail-nav">
-            <a class="rail-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}" href="{{ url_for('main.dashboard') }}">
-              <span class="rail-icon">01</span>
-              <span>Dashboard</span>
-            </a>
-            <a class="rail-link {% if request.endpoint == 'main.history' %}active{% endif %}" href="{{ url_for('main.history') }}">
-              <span class="rail-icon">02</span>
-              <span>History</span>
-            </a>
-            <a class="rail-link {% if request.endpoint == 'main.appointment' %}active{% endif %}" href="{{ url_for('main.appointment') }}">
-              <span class="rail-icon">03</span>
-              <span>Appointments</span>
-            </a>
-            <a class="rail-link {% if request.endpoint == 'main.hospital_locator' %}active{% endif %}" href="{{ url_for('main.hospital_locator') }}">
-              <span class="rail-icon">04</span>
-              <span>Hospital Finder</span>
-            </a>
+        {% if is_authenticated %}
+          <nav aria-label="Main Navigation">
+            <ul class="nav-links">
+              <li>
+                <a class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}" href="{{ url_for('main.dashboard') }}">Dashboard</a>
+              </li>
+              <li>
+                <a class="nav-link {% if request.endpoint == 'main.appointment' %}active{% endif %}" href="{{ url_for('main.appointment') }}">Appointments</a>
+              </li>
+              <li>
+                <a class="nav-link {% if request.endpoint == 'main.history' %}active{% endif %}" href="{{ url_for('main.history') }}">Past Notes</a>
+              </li>
+              <li>
+                <a class="nav-link {% if request.endpoint == 'main.hospital_locator' %}active{% endif %}" href="{{ url_for('main.hospital_locator') }}">Find Hospital</a>
+              </li>
+            </ul>
           </nav>
 
-          <div class="rail-footer">
-            <div class="profile-card">
-              <small>Account</small>
-              <strong>{{ current_user.display_name }}</strong>
-              <span>Your saved history, reports, and appointments stay here.</span>
-            </div>
-            <a class="button ghost wide" href="{{ url_for('auth.logout') }}">Logout</a>
+          <div class="user-menu">
+            <span class="user-name">{{ current_user.display_name }}</span>
+            <a class="btn-signout" href="{{ url_for('auth.logout') }}">Sign out</a>
+            <button type="button" class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">Menu</button>
           </div>
-        </aside>
-
-        <section class="workspace-main">
-          <header class="workspace-topbar">
-            <div>
-              <span class="eyebrow">Care dashboard</span>
-              <h2 class="topbar-title">{% block page_heading %}Your health dashboard{% endblock %}</h2>
-            </div>
-            <div class="topbar-status">
-              <span class="status-dot"></span>
-              <span>Guided support</span>
-            </div>
-          </header>
-
-          <main class="workspace-content">
-    {% else %}
-      <header class="site-header">
-        <div class="site-shell nav-shell">
-          <a class="brand-lockup" href="{{ url_for('main.home') }}">
-            <span class="brand-mark">C</span>
-            <span>
-              <strong>{{ app_name }}</strong>
-              <small>{{ brand_tagline }}</small>
-            </span>
-          </a>
-
-          <nav class="nav-links">
-            <a href="{{ url_for('main.home') }}">Home</a>
-            <a href="{{ url_for('auth.login') }}">Login</a>
-            <a class="button ghost small" href="{{ url_for('auth.register') }}">Create account</a>
+        {% else %}
+          <nav aria-label="Public Navigation">
+            <ul class="nav-links">
+              <li>
+                <a class="nav-link {% if request.endpoint == 'main.home' %}active{% endif %}" href="{{ url_for('main.home') }}">Home</a>
+              </li>
+              <li>
+                <a class="nav-link {% if request.endpoint == 'auth.login' %}active{% endif %}" href="{{ url_for('auth.login') }}">Sign in</a>
+              </li>
+            </ul>
           </nav>
-        </div>
-      </header>
-
-      <main class="site-shell main-shell">
-    {% endif %}
-
-        {% include "partials/flash.html" %}
-        {% block content %}{% endblock %}
-
-    {% if is_authenticated %}
-          </main>
-        </section>
+          <div class="user-menu">
+            <a class="button primary small" href="{{ url_for('auth.register') }}">Create account</a>
+          </div>
+        {% endif %}
       </div>
-    {% else %}
-      </main>
-    {% endif %}
+    </header>
+
+    <main class="site-container main-content" id="main-content">
+      {% include "partials/flash.html" %}
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-container footer-inner">
+        <p class="footer-emergency"><strong>Emergency:</strong> If you are experiencing chest pain, severe shortness of breath, sudden weakness, or heavy bleeding, call 112 immediately.</p>
+        <p>CareCompass is a health journal and appointment organizer. It does not provide medical diagnoses.</p>
+        <p class="muted-text">&copy; 2026 CareCompass. Your records are only visible when you're signed in.</p>
+      </div>
+    </footer>
 
     <script src="{{ url_for('static', filename='js/ui.js') }}"></script>
-    {% if ga_measurement_id %}
-      <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga_measurement_id }}"></script>
-      <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', '{{ ga_measurement_id }}');
-      </script>
-    {% endif %}
     {% block scripts %}{% endblock %}
   </body>
 </html>

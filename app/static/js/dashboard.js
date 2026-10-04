@@ -34,8 +34,9 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error(payload.error || "Something went wrong while generating the analysis.");
       }
 
+      resultContainer.classList.remove("hidden");
       resultContent.innerHTML = payload.html;
-      feedback.textContent = "Analysis generated successfully.";
+      feedback.textContent = "Visit summary prepared successfully.";
       resultContainer.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (error) {
       feedback.textContent = error.message;
