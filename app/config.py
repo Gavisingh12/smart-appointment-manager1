@@ -120,13 +120,15 @@ class BaseConfig:
         "CareCompass AI is a polished medical support dashboard for symptom intake, "
         "consultation history, appointments, PDF exports, and hospital discovery."
     )
-    DEBUG = env_bool("FLASK_DEBUG", False)
+    DEBUG = env_bool("FLASK_DEBUG", True)
+    TEMPLATES_AUTO_RELOAD = True
     TESTING = False
     PREFERRED_URL_SCHEME = "http"
 
 
 class DevelopmentConfig(BaseConfig):
     DEBUG = env_bool("FLASK_DEBUG", True)
+    TEMPLATES_AUTO_RELOAD = True
 
 
 class TestingConfig(BaseConfig):
