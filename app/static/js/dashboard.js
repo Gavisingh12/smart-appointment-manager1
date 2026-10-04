@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     feedback.classList.remove("hidden");
-    feedback.textContent = "Working on your analysis...";
+    feedback.textContent = "Compiling physician consultation brief...";
 
     const formData = new FormData(form);
 
@@ -31,12 +31,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (!response.ok || !payload.success) {
-        throw new Error(payload.error || "Something went wrong while generating the analysis.");
+        throw new Error(payload.error || "Unable to compile consultation briefing. Please try again.");
       }
 
       resultContainer.classList.remove("hidden");
       resultContent.innerHTML = payload.html;
-      feedback.textContent = "Visit summary prepared successfully.";
+      feedback.textContent = "Physician consultation brief generated successfully.";
       resultContainer.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (error) {
       feedback.textContent = error.message;

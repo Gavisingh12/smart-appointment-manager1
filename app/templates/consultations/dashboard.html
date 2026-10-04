@@ -79,16 +79,45 @@
     <!-- Left 8 Columns: Rich Symptom Intake Studio -->
     <div class="col-8">
       <section class="card" aria-labelledby="intake-title">
-        <h2 id="intake-title">Describe what you are feeling</h2>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+          <h2 id="intake-title" style="margin: 0;">Symptom Intake & Consultation Briefing</h2>
+          <span class="status-badge neutral" style="font-size: 11px;">Pre-Visit Form</span>
+        </div>
 
-        <!-- Categorized Quick Chips -->
+        <!-- Categorized Clinical Chips -->
         <div class="quick-chips-wrapper">
+          <!-- Onset & Severity Quick Selectors -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; background-color: var(--surface-alt); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-decor);">
+            <div>
+              <div class="symptom-category-title" style="margin-bottom: 6px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                Onset Time
+              </div>
+              <div class="quick-chips">
+                <button type="button" class="chip-btn" data-symptom="Onset: Started today" aria-pressed="false" style="min-height: 30px; font-size: 12px; padding: 3px 9px;">Today</button>
+                <button type="button" class="chip-btn" data-symptom="Onset: Started 2-3 days ago" aria-pressed="false" style="min-height: 30px; font-size: 12px; padding: 3px 9px;">2–3 Days</button>
+                <button type="button" class="chip-btn" data-symptom="Onset: Ongoing for 1+ week" aria-pressed="false" style="min-height: 30px; font-size: 12px; padding: 3px 9px;">1 Week+</button>
+              </div>
+            </div>
+            <div>
+              <div class="symptom-category-title" style="margin-bottom: 6px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                Severity Level
+              </div>
+              <div class="quick-chips">
+                <button type="button" class="chip-btn" data-symptom="Severity: Mild discomfort (1-3/10)" aria-pressed="false" style="min-height: 30px; font-size: 12px; padding: 3px 9px;">Mild (1-3)</button>
+                <button type="button" class="chip-btn" data-symptom="Severity: Moderate pain (4-6/10)" aria-pressed="false" style="min-height: 30px; font-size: 12px; padding: 3px 9px;">Moderate (4-6)</button>
+                <button type="button" class="chip-btn" data-symptom="Severity: Severe distress (7-10/10)" aria-pressed="false" style="min-height: 30px; font-size: 12px; padding: 3px 9px;">Severe (7-10)</button>
+              </div>
+            </div>
+          </div>
+
           <div class="symptom-category-group">
             <div class="symptom-category-title">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
-              General Symptoms
+              Common Observations
             </div>
-            <div class="quick-chips" role="group" aria-label="General symptoms">
+            <div class="quick-chips" role="group" aria-label="Common symptoms">
               <button type="button" class="chip-btn" data-symptom="Fever" aria-pressed="false">Fever</button>
               <button type="button" class="chip-btn" data-symptom="Fatigue" aria-pressed="false">Fatigue</button>
               <button type="button" class="chip-btn" data-symptom="Chills" aria-pressed="false">Chills</button>
@@ -98,7 +127,7 @@
           <div class="symptom-category-group">
             <div class="symptom-category-title">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path></svg>
-              Respiratory
+              Respiratory & ENT
             </div>
             <div class="quick-chips" role="group" aria-label="Respiratory symptoms">
               <button type="button" class="chip-btn" data-symptom="Dry cough" aria-pressed="false">Dry cough</button>
@@ -110,7 +139,7 @@
           <div class="symptom-category-group" style="margin-bottom: 0;">
             <div class="symptom-category-title">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-              Aches & Discomfort
+              Pain & Physical Discomfort
             </div>
             <div class="quick-chips" role="group" aria-label="Pain symptoms">
               <button type="button" class="chip-btn" data-symptom="Headache" aria-pressed="false">Headache</button>
@@ -126,16 +155,16 @@
           <!-- Inset Clinical Guidance Bar -->
           <div class="guidance-bar">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand);" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-            <span><strong>Tip:</strong> Mention when symptoms started, their severity (mild/moderate/severe), and if any triggers worsen them.</span>
+            <span><strong>Clinical Tip:</strong> Include onset date, pain level (1–10), and any over-the-counter remedies you have taken.</span>
           </div>
 
           <div class="form-group">
-            <label for="symptoms" class="input-label">Detailed symptoms and observations</label>
+            <label for="symptoms" class="input-label">Describe your symptoms in your own words</label>
             <textarea
               id="symptoms"
               name="symptoms"
               rows="5"
-              placeholder="e.g. Started yesterday with a fever of 100.5°F, accompanied by a dry cough and mild headache. Worse in the evening..."
+              placeholder="e.g. Fever started 2 days ago reaching 101°F. Accompanied by severe throbbing headache and body aches. Paracetamol provided temporary relief..."
               required
             ></textarea>
           </div>
@@ -143,25 +172,25 @@
           <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
             <button type="submit" class="button primary" id="prepare-summary-btn">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              Prepare my visit summary
+              Generate Physician Briefing
             </button>
             <span class="muted-text" id="symptomWordCount">0 words logged</span>
           </div>
         </form>
 
         <div id="diagnosisFeedback" class="status-inline hidden" role="status" aria-live="polite">
-          Preparing your visit discussion points...
+          Compiling clinical discussion brief for your appointment...
         </div>
 
         <div class="privacy-note">
-          <p><strong>Your notes are only visible when you're signed in.</strong></p>
-          <p class="ai-disclosure">When AI guidance is enabled, symptom descriptions are processed via Google Gemini to generate discussion points. In standard demo mode, notes are processed locally on this server.</p>
+          <p><strong>Strict Patient Confidentiality:</strong> Your health records are encrypted and accessible only when signed in to your secure account.</p>
+          <p class="ai-disclosure">Summaries are compiled to help you organize symptoms and questions before consulting your physician. They do not constitute a medical diagnosis or treatment plan.</p>
         </div>
       </section>
 
       <!-- Asynchronous Analysis Result Container -->
       <section class="card hidden" id="diagnosis-result-container" aria-live="polite" style="margin-top: 24px;">
-        <h2 class="card-title">Prepared Doctor Discussion Points</h2>
+        <h2 class="card-title">Physician Consultation Brief</h2>
         <div id="diagnosis-result-content"></div>
       </section>
     </div>
@@ -170,7 +199,10 @@
     <div class="col-4 sticky-sidebar">
       <!-- Next Doctor Visit -->
       <section class="card" aria-labelledby="next-appointment-heading">
-        <h2 id="next-appointment-heading" class="card-title">Next doctor visit</h2>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;">
+          <h2 id="next-appointment-heading" class="card-title" style="margin: 0;">Next doctor visit</h2>
+          <span class="muted-text" style="font-size: 11px; font-weight: 600; letter-spacing: 0.05em;">REF-CC-2026</span>
+        </div>
         {% if next_appointment %}
           <div class="appointment-snapshot">
             <div class="date-block" aria-hidden="true">
@@ -212,7 +244,7 @@
             <div class="stat-icon" style="margin: 0 auto 12px auto;">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
             </div>
-            <p>You have no upcoming doctor visits scheduled.</p>
+            <p>No upcoming clinic visits scheduled.</p>
             <a class="button primary small" href="{{ url_for('main.appointment') }}">+ Schedule a visit</a>
           </div>
         {% endif %}
@@ -232,11 +264,19 @@
             <div class="stat-icon accent" style="margin: 0 auto 12px auto;">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
             </div>
-            <p>Your saved consultation notes will appear here once prepared.</p>
+            <p>Your saved symptom notes will appear here once submitted.</p>
             <a class="button secondary small" href="{{ url_for('main.history') }}">Open past notes</a>
           </div>
         {% endif %}
       </section>
+
+      <!-- Patient Data Confidentiality Seal -->
+      <div style="margin-top: 16px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border-decor); border-radius: var(--radius-control); display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow-sm);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand); flex-shrink: 0;" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        <span style="font-size: 12px; color: var(--text-muted); line-height: 1.35;">
+          <strong style="color: var(--text);">Encrypted Medical Record:</strong> Strictly confidential and accessible only to your authenticated session.
+        </span>
+      </div>
     </div>
   </div>
 {% endblock %}

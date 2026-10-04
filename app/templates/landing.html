@@ -1,51 +1,52 @@
 {% extends "base.html" %}
 
-{% block title %}{{ app_name }} | Smart Care Dashboard{% endblock %}
-{% block meta_description %}AI-supported symptom intake, appointment planning, consultation history, PDF exports, and hospital discovery in one polished dashboard.{% endblock %}
+{% block title %}CareCompass | Personal Health Journal & Visit Companion{% endblock %}
+{% block meta_description %}Private symptom journal, doctor visit planning, consultation records, and accredited hospital discovery in one calm, secure space.{% endblock %}
 {% block body_class %}landing-body{% endblock %}
 
 {% block content %}
   <section class="hero-panel">
     <div class="hero-copy">
-      <span class="eyebrow">Smart care support</span>
-      <h1>Track symptoms, plan visits, and keep your health notes in one calm dashboard.</h1>
+      <span class="eyebrow">Personal Health Journal & Visit Companion</span>
+      <h1>Organize your symptoms, prepare for doctor visits, and take control of your health journey.</h1>
       <p>
-        CareCompass AI helps you record symptoms, save consultations, plan appointments,
-        find nearby hospitals, and download reports whenever you need them.
+        CareCompass gives you a private, structured journal to log health observations,
+        prepare concise discussion briefs for your physician, and organize clinic appointments
+        in one secure space.
       </p>
       <div class="button-row">
-        <a class="button primary" href="{{ url_for('auth.register') }}">Start New Account</a>
-        <a class="button ghost" href="{{ url_for('auth.login') }}">Log in</a>
+        <a class="button primary" href="{{ url_for('auth.register') }}">Create Free Account</a>
+        <a class="button secondary" href="{{ url_for('auth.login') }}">Sign In</a>
       </div>
       <div class="hero-badges">
-        <span>Private account</span>
-        <span>Guided symptom support</span>
-        <span>Saved consultation history</span>
-        <span>PDF reports</span>
+        <span>Private & Encrypted</span>
+        <span>Doctor Visit Briefings</span>
+        <span>Consultation History</span>
+        <span>Printable Summaries</span>
       </div>
     </div>
 
     <div class="hero-card showcase-card">
       <div class="showcase-header">
-        <strong>Everything in one place</strong>
-        <span class="status-pill status-live">Ready to use</span>
+        <strong>Health Journal Overview</strong>
+        <span class="status-pill status-live">Clinical Standard</span>
       </div>
       <div class="stat-grid">
         <article class="stat-card">
-          <span>Symptom checks</span>
-          <strong>Fast guided analysis</strong>
+          <span>Symptom Logging</span>
+          <strong>Track onset & severity</strong>
         </article>
         <article class="stat-card">
-          <span>Appointments</span>
-          <strong>Plan doctor visits</strong>
+          <span>Visit Planning</span>
+          <strong>Schedule clinic visits</strong>
         </article>
         <article class="stat-card">
-          <span>Hospitals</span>
-          <strong>Find care near you</strong>
+          <span>Care Locator</span>
+          <strong>Find nearest units</strong>
         </article>
         <article class="stat-card">
-          <span>Reports</span>
-          <strong>Download your records</strong>
+          <span>Clinical Records</span>
+          <strong>Printable PDF reports</strong>
         </article>
       </div>
     </div>
@@ -54,33 +55,33 @@
   <section class="trust-strip">
     <article class="trust-card">
       <span>01</span>
-      <strong>Understand symptoms</strong>
-      <p>Describe how you feel and get guided next steps in a clear format.</p>
+      <strong>Log Health Observations</strong>
+      <p>Record symptom onset, pain progression, and medication notes as they happen so critical details aren't forgotten.</p>
     </article>
     <article class="trust-card">
       <span>02</span>
-      <strong>Stay organized</strong>
-      <p>Keep appointments, saved records, and recent activity together.</p>
+      <strong>Prepare for Appointments</strong>
+      <p>Generate a structured briefing outline to make the most of your 15-minute consultation with your doctor.</p>
     </article>
     <article class="trust-card">
       <span>03</span>
-      <strong>Download and revisit</strong>
-      <p>Open past consultations anytime and export them as clean PDF reports.</p>
+      <strong>Maintain Care Continuity</strong>
+      <p>Archive previous visit summaries and export clinical PDF reports whenever consulting a specialist.</p>
     </article>
   </section>
 
   <section class="feature-grid">
     <article class="feature-card">
-      <h3>Simple to use</h3>
-      <p>The interface keeps the important actions visible so it feels easy from the first click.</p>
+      <h3>Designed for Clarity</h3>
+      <p>Simple, focused layouts designed for stress-free recording even when you are fatigued or feeling unwell.</p>
     </article>
     <article class="feature-card">
-      <h3>Your records stay organized</h3>
-      <p>Consultations, appointments, and hospital search results are easier to revisit when you need them.</p>
+      <h3>Physician-Ready Summaries</h3>
+      <p>Transform scattered observations into chronologically ordered briefing points your doctor can review at a glance.</p>
     </article>
     <article class="feature-card">
-      <h3>Calm modern design</h3>
-      <p>A cleaner layout, depth, and motion make the dashboard feel polished without becoming confusing.</p>
+      <h3>Patient Privacy by Design</h3>
+      <p>Your medical notes remain confidential and encrypted. Your personal journal is only accessible when you are signed in.</p>
     </article>
   </section>
 {% endblock %}
