@@ -12,7 +12,7 @@
 </section>
 
 <div class="result-grid">
-  <article class="result-card tilt-card">
+  <article class="result-card">
     <span>Differential diagnoses</span>
     <ul class="result-list">
       {% for item in analysis_points(analysis.differential_diagnoses) %}
@@ -20,7 +20,7 @@
       {% endfor %}
     </ul>
   </article>
-  <article class="result-card tilt-card">
+  <article class="result-card">
     <span>Investigations</span>
     <ul class="result-list">
       {% for item in analysis_points(analysis.investigations) %}
@@ -28,7 +28,7 @@
       {% endfor %}
     </ul>
   </article>
-  <article class="result-card tilt-card">
+  <article class="result-card">
     <span>Treatment</span>
     <ul class="result-list">
       {% for item in analysis_points(analysis.treatment) %}
@@ -36,7 +36,7 @@
       {% endfor %}
     </ul>
   </article>
-  <article class="result-card tilt-card">
+  <article class="result-card">
     <span>Medications</span>
     <ul class="result-list">
       {% for item in analysis_points(analysis.medications) %}
@@ -44,7 +44,7 @@
       {% endfor %}
     </ul>
   </article>
-  <article class="result-card tilt-card">
+  <article class="result-card">
     <span>Precautions</span>
     <ul class="result-list">
       {% for item in analysis_points(analysis.precautions) %}
@@ -52,7 +52,7 @@
       {% endfor %}
     </ul>
   </article>
-  <article class="result-card tilt-card result-card-callout">
+  <article class="result-card result-card-callout">
     <span>Patient-friendly takeaway</span>
     <p class="result-callout-copy">{{ analysis_summary(analysis.treatment, 1) }}</p>
     <small>{{ analysis_summary(analysis.precautions, 1) }}</small>

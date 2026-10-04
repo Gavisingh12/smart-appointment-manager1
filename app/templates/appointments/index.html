@@ -2,7 +2,6 @@
 
 {% block title %}Appointments | {{ app_name }}{% endblock %}
 {% block page_heading %}Appointments and planning{% endblock %}
-{% block scene_mode %}workspace{% endblock %}
 
 {% block content %}
   <section class="workspace-hero compact-hero premium-surface">
@@ -12,11 +11,11 @@
       <p class="section-copy">Keep doctor visits, reminders, and context organized in one timeline.</p>
     </div>
     <div class="mini-metrics">
-      <article class="metric-card tilt-card">
+      <article class="metric-card">
         <span>Upcoming count</span>
-        <strong data-countup="{{ upcoming_count }}">0</strong>
+        <strong>{{ upcoming_count }}</strong>
       </article>
-      <article class="metric-card tilt-card">
+      <article class="metric-card">
         <span>Next visit</span>
         <strong>{{ next_appointment.date.strftime('%d %b') if next_appointment else 'None' }}</strong>
       </article>
@@ -63,7 +62,7 @@
       {% if appointments %}
         <div class="appointment-list">
           {% for appointment in appointments %}
-            <article class="appointment-card tilt-card">
+            <article class="appointment-card">
               <div class="appointment-info">
                 <strong>{{ appointment.doctor }}</strong>
                 <p>{{ appointment.date.strftime('%d %b %Y') }} at {{ appointment.time }}</p>

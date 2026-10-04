@@ -3,7 +3,6 @@
 {% block title %}Dashboard | {{ app_name }}{% endblock %}
 {% block meta_description %}Private care dashboard for symptom analysis, appointments, saved reports, and hospital search.{% endblock %}
 {% block page_heading %}Your care dashboard{% endblock %}
-{% block scene_mode %}workspace{% endblock %}
 
 {% block content %}
   <section class="workspace-hero premium-surface">
@@ -22,11 +21,11 @@
       </div>
     </div>
 
-    <div class="hero-score-card tilt-card">
+    <div class="hero-score-card">
       <span class="eyebrow">Care activity</span>
       <div class="score-ring" style="--score: {{ activity_score }}">
         <div>
-          <strong data-countup="{{ activity_score }}">0</strong>
+          <strong>{{ activity_score }}</strong>
           <small>/ 100</small>
         </div>
       </div>
@@ -35,22 +34,22 @@
   </section>
 
   <section class="metric-grid enhanced-metrics">
-    <article class="metric-card tilt-card">
+    <article class="metric-card">
       <span>Total consultations</span>
-      <strong data-countup="{{ consultation_count }}">0</strong>
+      <strong>{{ consultation_count }}</strong>
       <small>All saved activity</small>
     </article>
-    <article class="metric-card tilt-card">
+    <article class="metric-card">
       <span>Upcoming appointments</span>
-      <strong data-countup="{{ appointment_count }}">0</strong>
+      <strong>{{ appointment_count }}</strong>
       <small>Scheduled patient interactions</small>
     </article>
-    <article class="metric-card tilt-card">
+    <article class="metric-card">
       <span>Active days</span>
-      <strong data-countup="{{ active_days }}">0</strong>
+      <strong>{{ active_days }}</strong>
       <small>Days with stored consultations</small>
     </article>
-    <article class="metric-card tilt-card">
+    <article class="metric-card">
       <span>Support mode</span>
       <strong>{{ 'Enhanced' if system_status.ai.enabled else 'Standard' }}</strong>
       <small>{{ 'More detailed responses are available' if system_status.ai.enabled else 'Helpful guidance still works in standard mode' }}</small>
@@ -81,7 +80,7 @@
     </article>
 
     <div class="dashboard-side-stack">
-      <article class="panel tilt-card">
+      <article class="panel">
         <div class="panel-head">
           <div>
             <span class="eyebrow">Next appointment</span>
@@ -99,7 +98,7 @@
         {% endif %}
       </article>
 
-      <article class="panel tilt-card">
+      <article class="panel">
         <div class="panel-head">
           <div>
             <span class="eyebrow">Quick highlights</span>
@@ -116,7 +115,7 @@
         </div>
       </article>
 
-      <article class="panel tilt-card">
+      <article class="panel">
         <div class="panel-head">
           <div>
             <span class="eyebrow">Last update</span>
@@ -155,7 +154,7 @@
     {% if recent_consultations %}
       <div class="activity-grid">
         {% for item in recent_consultations %}
-          <article class="activity-card tilt-card">
+          <article class="activity-card">
             <small>{{ item.timestamp.strftime('%d %b %Y, %I:%M %p') }}</small>
             <strong>{{ item.symptoms }}</strong>
             <p>{{ item.summary }}</p>
