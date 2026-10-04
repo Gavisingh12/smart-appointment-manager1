@@ -7,7 +7,7 @@
     {% set seo_description %}{% block meta_description %}{{ seo_default_description }}{% endblock %}{% endset %}
     <title>{{ seo_title|trim }}</title>
     <meta name="description" content="{{ seo_description|trim }}">
-    <meta name="theme-color" content="#F7F2EA">
+    <meta name="theme-color" content="#F4F6F8">
     <meta property="og:type" content="website">
     <meta property="og:title" content="{{ seo_title|trim }}">
     <meta property="og:description" content="{{ seo_description|trim }}">
@@ -23,30 +23,39 @@
     <header class="site-header">
       <div class="site-container nav-shell">
         <a class="brand-lockup" href="{{ url_for('main.dashboard') if is_authenticated else url_for('main.home') }}">
-          <span class="brand-icon" aria-hidden="true">C</span>
+          <div class="brand-emblem" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 4h4v6h6v4h-6v6h-4v-6H4v-4h6V4z"/>
+            </svg>
+          </div>
           <span class="brand-title">CareCompass</span>
         </a>
 
         {% if is_authenticated %}
+          {% set name_parts = (current_user.display_name or 'User').split() %}
+          {% set initials = name_parts[0][0] + (name_parts[-1][0] if name_parts|length > 1 else '') %}
           <nav aria-label="Main Navigation">
             <ul class="nav-links">
               <li>
-                <a class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}" href="{{ url_for('main.dashboard') }}">Dashboard</a>
+                <a class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}" href="{{ url_for('main.dashboard') }}" {% if request.endpoint == 'main.dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
               </li>
               <li>
-                <a class="nav-link {% if request.endpoint == 'main.appointment' %}active{% endif %}" href="{{ url_for('main.appointment') }}">Appointments</a>
+                <a class="nav-link {% if request.endpoint == 'main.appointment' %}active{% endif %}" href="{{ url_for('main.appointment') }}" {% if request.endpoint == 'main.appointment' %}aria-current="page"{% endif %}>Appointments</a>
               </li>
               <li>
-                <a class="nav-link {% if request.endpoint == 'main.history' %}active{% endif %}" href="{{ url_for('main.history') }}">Past Notes</a>
+                <a class="nav-link {% if request.endpoint == 'main.history' %}active{% endif %}" href="{{ url_for('main.history') }}" {% if request.endpoint == 'main.history' %}aria-current="page"{% endif %}>Past Notes</a>
               </li>
               <li>
-                <a class="nav-link {% if request.endpoint == 'main.hospital_locator' %}active{% endif %}" href="{{ url_for('main.hospital_locator') }}">Find Hospital</a>
+                <a class="nav-link {% if request.endpoint == 'main.hospital_locator' %}active{% endif %}" href="{{ url_for('main.hospital_locator') }}" {% if request.endpoint == 'main.hospital_locator' %}aria-current="page"{% endif %}>Find Hospital</a>
               </li>
             </ul>
           </nav>
 
           <div class="user-menu">
-            <span class="user-name">{{ current_user.display_name }}</span>
+            <div class="user-chip">
+              <span class="user-avatar" aria-hidden="true">{{ initials }}</span>
+              <span class="user-name">{{ current_user.display_name }}</span>
+            </div>
             <a class="btn-signout" href="{{ url_for('auth.logout') }}">Sign out</a>
             <button type="button" class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">Menu</button>
           </div>
@@ -75,7 +84,7 @@
 
     <footer class="site-footer">
       <div class="site-container footer-inner">
-        <p class="footer-emergency"><strong>Emergency:</strong> If you are experiencing chest pain, severe shortness of breath, sudden weakness, or heavy bleeding, call 112 immediately.</p>
+        <p class="footer-emergency"><strong>Emergency:</strong> If you are experiencing chest pain, severe shortness of breath, sudden weakness, or heavy bleeding, call <a href="tel:112">112</a> immediately.</p>
         <p>CareCompass is a health journal and appointment organizer. It does not provide medical diagnoses.</p>
         <p class="muted-text">&copy; 2026 CareCompass. Your records are only visible when you're signed in.</p>
       </div>

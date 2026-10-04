@@ -1,135 +1,145 @@
 {% extends "base.html" %}
 
-{% block title %}Consultation History | {{ app_name }}{% endblock %}
-{% block meta_description %}Review consultation history, export PDF summaries, and track activity trends in CareCompass AI.{% endblock %}
-{% block page_heading %}Consultation history{% endblock %}
+{% block title %}Past Notes | CareCompass{% endblock %}
+{% block meta_description %}Review your consultation notes, symptom timeline, and export clinical summaries.{% endblock %}
 
 {% block head %}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
 {% block content %}
-  <section class="workspace-hero compact-hero premium-surface">
-    <div class="workspace-hero-copy">
-      <span class="eyebrow">History</span>
-      <h1>Your saved consultations</h1>
-      <p class="section-copy">Review past symptom notes, follow your activity over time, and download reports when needed.</p>
-    </div>
-    <div class="mini-metrics">
-      <article class="metric-card">
-        <span>Total records</span>
-        <strong>{{ total_consultations }}</strong>
-      </article>
-      <article class="metric-card">
-        <span>Most recent</span>
-        <strong>{{ most_recent.strftime('%d %b') if most_recent else 'None' }}</strong>
-      </article>
-      <article class="metric-card">
-        <span>Most active day</span>
-        <strong>{{ most_active_day if most_active_day else 'N/A' }}</strong>
-      </article>
-    </div>
-  </section>
+  <header class="page-header">
+    <h1>Past Consultation Notes</h1>
+    <p class="page-subtitle">Track your symptom notes over time and export summaries for your doctor visits.</p>
+  </header>
 
-  <section class="panel premium-surface">
-    <div class="panel-head">
-        <div>
-          <span class="eyebrow">Overview</span>
-          <h2>Consultation activity</h2>
-        </div>
-    </div>
-
-    {% if chart_labels %}
-      <div class="chart-shell large-chart">
-        <canvas id="historyChart"></canvas>
+  {% if chart_labels %}
+    <section class="card chart-card" aria-labelledby="activity-heading">
+      <h2 id="activity-heading" class="card-title">Consultation Activity Over Time</h2>
+      <div class="chart-wrapper">
+        <canvas id="historyChart" aria-label="Line chart showing consultation activity over dates" role="img"></canvas>
       </div>
-    {% else %}
-      <p class="section-copy">No consultation history yet.</p>
-    {% endif %}
-  </section>
+      <p class="form-hint" style="margin-top: 8px; text-align: right;">Total records recorded: {{ total_consultations }}</p>
+    </section>
+  {% endif %}
 
-  <section class="panel">
-    <div class="panel-head">
-        <div>
-          <span class="eyebrow">Records</span>
-          <h2>Saved records</h2>
-        </div>
+  <section class="card" aria-labelledby="history-records-heading">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+      <h2 id="history-records-heading" style="margin: 0;">Consultation timeline</h2>
+      {% if consultations %}
+        <span class="muted-text">{{ consultations|length }} note{% if consultations|length != 1 %}s{% endif %} saved</span>
+      {% endif %}
     </div>
 
     {% if consultations %}
-      <div class="table-shell">
-        <table class="data-table polished-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Symptoms</th>
-              <th>Summary</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for consultation in consultations %}
-              <tr>
-                <td>{{ consultation.timestamp.strftime('%d %b %Y, %I:%M %p') }}</td>
-                <td>{{ consultation.symptoms }}</td>
-                <td>{{ consultation.summary }}</td>
-                <td>
-                  <div class="table-actions">
-                    <a class="button ghost small" href="{{ url_for('main.download_pdf', consultation_id=consultation.id) }}">Export PDF</a>
-                    <form method="post" action="{{ url_for('main.delete_consultation', consultation_id=consultation.id) }}" onsubmit="return confirm('Delete this consultation record?')">
-                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                      <button type="submit" class="button danger small">Delete</button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+      <div class="timeline-list">
+        {% for consultation in consultations %}
+          <article class="timeline-card">
+            <header class="timeline-header">
+              <div class="timeline-date">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: -2px; margin-right: 6px;" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                {{ consultation.timestamp.strftime('%A, %d %B %Y at %I:%M %p') }}
+              </div>
+              <div class="timeline-actions">
+                <a class="button ghost small" href="{{ url_for('main.download_pdf', consultation_id=consultation.id) }}">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  Export PDF
+                </a>
+                <button type="button" class="button ghost small" onclick="window.print();" title="Print this record">
+                  Print
+                </button>
+                <form method="post" action="{{ url_for('main.delete_consultation', consultation_id=consultation.id) }}" style="display: inline;">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="button" class="button danger small trigger-delete-dialog" data-doctor="Consultation record" data-date="{{ consultation.timestamp.strftime('%d %b %Y') }}">
+                    Delete
+                  </button>
+                </form>
+              </div>
+            </header>
+            <div class="timeline-body">
+              <div>
+                <strong style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); display: block; margin-bottom: 2px;">Reported symptoms</strong>
+                <p class="timeline-symptoms">{{ consultation.symptoms }}</p>
+              </div>
+              {% if consultation.summary %}
+                <div>
+                  <strong style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); display: block; margin-bottom: 4px;">Summary / discussion points</strong>
+                  <div class="timeline-summary">{{ consultation.summary }}</div>
+                </div>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
       </div>
     {% else %}
-      <p class="section-copy">Once you generate analyses, they will appear here.</p>
+      <div class="empty-state">
+        <p>You have not recorded any consultation notes yet.</p>
+        <a class="button secondary small" href="{{ url_for('main.dashboard') }}">Prepare a visit summary</a>
+      </div>
     {% endif %}
   </section>
+
+  <!-- Accessible Remove Confirmation Dialog -->
+  <dialog id="deleteAppointmentDialog" class="confirm-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-desc">
+    <h2 id="dialog-title">Delete consultation record</h2>
+    <p id="dialog-desc">Are you sure you want to permanently delete this consultation note from <span id="dialog-appointment-date"></span>? This action cannot be undone.</p>
+    <div class="dialog-actions">
+      <button type="button" class="button secondary small" id="cancelDialogBtn">Keep record</button>
+      <button type="button" class="button danger small" id="confirmDeleteBtn">Delete</button>
+    </div>
+  </dialog>
 {% endblock %}
 
 {% block scripts %}
   {% if chart_labels %}
     <script>
       const ctx = document.getElementById('historyChart');
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: {{ chart_labels|tojson }},
-          datasets: [{
-            label: 'Consultations',
-            data: {{ chart_data|tojson }},
-            borderColor: '#0f766e',
-            backgroundColor: 'rgba(15, 118, 110, 0.18)',
-            tension: 0.35,
-            fill: true,
-            borderWidth: 3,
-            pointRadius: 4,
-            pointBackgroundColor: '#f08c5a'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: {
-              grid: { display: false },
-              ticks: { color: '#dce7f2' }
+      if (ctx) {
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: {{ chart_labels|tojson }},
+            datasets: [{
+              label: 'Consultation notes',
+              data: {{ chart_data|tojson }},
+              borderColor: '#0D5C46',
+              backgroundColor: 'rgba(13, 92, 70, 0.12)',
+              tension: 0.3,
+              fill: true,
+              borderWidth: 2.5,
+              pointRadius: 4,
+              pointBackgroundColor: '#C25E34',
+              pointBorderColor: '#FFFFFF',
+              pointBorderWidth: 1.5
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#1A2229',
+                titleFont: { family: 'system-ui, sans-serif', size: 13 },
+                bodyFont: { family: 'system-ui, sans-serif', size: 13 },
+                padding: 10,
+                cornerRadius: 6
+              }
             },
-            y: {
-              beginAtZero: true,
-              ticks: { color: '#dce7f2' },
-              grid: { color: 'rgba(220, 231, 242, 0.12)' }
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: { color: '#5C6873', font: { family: 'system-ui, sans-serif', size: 12 } }
+              },
+              y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1, color: '#5C6873', font: { family: 'system-ui, sans-serif', size: 12 } },
+                grid: { color: '#E1E6EB' }
+              }
             }
           }
-        }
-      });
+        });
+      }
     </script>
   {% endif %}
 {% endblock %}

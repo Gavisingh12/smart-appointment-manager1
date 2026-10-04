@@ -4,14 +4,14 @@
 {% block meta_description %}Private care dashboard for symptom intake and appointment preparation.{% endblock %}
 
 {% block content %}
-  <div class="dashboard-header">
+  <header class="page-header">
     <h1 id="dashboard-greeting" data-name="{{ current_user.greeting_name }}">Hello, {{ current_user.greeting_name }}</h1>
-    <p class="dashboard-date" id="dashboard-date">&nbsp;</p>
-  </div>
+    <p class="page-subtitle" id="dashboard-date">&nbsp;</p>
+  </header>
 
   <div class="emergency-banner" role="alert">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-    <span><strong>Emergency:</strong> If you have severe chest pain, breathing trouble, or heavy bleeding, call 112 immediately.</span>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+    <span><strong>Emergency:</strong> If you have severe chest pain, breathing trouble, or heavy bleeding, call <a href="tel:112">112</a> immediately.</span>
   </div>
 
   <div class="grid-12">
@@ -22,19 +22,22 @@
 
         <div class="quick-chips-wrapper">
           <span class="quick-chips-label">Common symptoms (tap to add):</span>
-          <div class="quick-chips" role="group" aria-label="Quick symptom tags">
-            <button type="button" class="chip-btn" data-symptom="Fever">Fever</button>
-            <button type="button" class="chip-btn" data-symptom="Headache">Headache</button>
-            <button type="button" class="chip-btn" data-symptom="Cough">Cough</button>
-            <button type="button" class="chip-btn" data-symptom="Sore throat">Sore throat</button>
-            <button type="button" class="chip-btn" data-symptom="Fatigue">Fatigue</button>
-            <button type="button" class="chip-btn" data-symptom="Body ache">Body ache</button>
+          <div class="quick-chips" role="group" aria-label="Common symptoms">
+            <button type="button" class="chip-btn" data-symptom="Fever" aria-pressed="false">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+              Fever
+            </button>
+            <button type="button" class="chip-btn" data-symptom="Headache" aria-pressed="false">Headache</button>
+            <button type="button" class="chip-btn" data-symptom="Cough" aria-pressed="false">Cough</button>
+            <button type="button" class="chip-btn" data-symptom="Sore throat" aria-pressed="false">Sore throat</button>
+            <button type="button" class="chip-btn" data-symptom="Fatigue" aria-pressed="false">Fatigue</button>
+            <button type="button" class="chip-btn" data-symptom="Body ache" aria-pressed="false">Body ache</button>
           </div>
         </div>
 
         <form id="diagnosisForm" method="post" class="stack-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <div>
+          <div class="form-group">
             <label for="symptoms" class="input-label">Symptoms and observations</label>
             <textarea
               id="symptoms"
@@ -43,9 +46,10 @@
               placeholder="Describe your symptoms, when they started, and anything that makes them better or worse..."
               required
             ></textarea>
+            <span class="form-hint" id="symptoms-hint">Be as specific as possible about timing and triggers.</span>
           </div>
           <div class="button-row">
-            <button type="submit" class="button primary">Prepare my visit summary</button>
+            <button type="submit" class="button primary" id="prepare-summary-btn">Prepare my visit summary</button>
           </div>
         </form>
 
@@ -74,8 +78,8 @@
         {% if next_appointment %}
           <div class="appointment-snapshot">
             <div class="date-block" aria-hidden="true">
-              <span class="day-num">{{ next_appointment.date.strftime('%d') }}</span>
-              <span class="month-str">{{ next_appointment.date.strftime('%b') }}</span>
+              <span class="date-block-month">{{ next_appointment.date.strftime('%b') }}</span>
+              <span class="date-block-day">{{ next_appointment.date.strftime('%d') }}</span>
             </div>
             <div class="appointment-details">
               <div class="doctor-name">{{ next_appointment.doctor }}</div>
@@ -89,7 +93,7 @@
             <a class="button ghost small" href="{{ url_for('main.appointment') }}">Manage appointments &rarr;</a>
           </div>
         {% else %}
-          <div class="empty-card-state">
+          <div class="empty-state">
             <p>You have no upcoming doctor visits scheduled.</p>
             <a class="button secondary small" href="{{ url_for('main.appointment') }}">+ Schedule a visit</a>
           </div>
@@ -100,11 +104,13 @@
       <section class="card" aria-labelledby="recent-note-heading">
         <h2 id="recent-note-heading" class="card-title">Recent consultation note</h2>
         {% if latest_consultation %}
-          <p style="font-size: 14px; margin-bottom: 8px;"><strong>Recorded:</strong> {{ latest_consultation.timestamp.strftime('%d %b %Y, %I:%M %p') }}</p>
-          <p class="muted-text" style="margin-bottom: 16px;">{{ latest_consultation.symptoms|truncate(120) }}</p>
+          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">
+            <strong>Recorded:</strong> {{ latest_consultation.timestamp.strftime('%d %b %Y, %I:%M %p') }}
+          </div>
+          <p style="font-size: 14px; margin-bottom: 16px; line-height: 1.4;">{{ latest_consultation.symptoms|truncate(120) }}</p>
           <a class="button ghost small" href="{{ url_for('main.history') }}">View all past notes &rarr;</a>
         {% else %}
-          <div class="empty-card-state">
+          <div class="empty-state">
             <p>Your saved consultation notes will appear here once prepared.</p>
             <a class="button secondary small" href="{{ url_for('main.history') }}">Open past notes</a>
           </div>

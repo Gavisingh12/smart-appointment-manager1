@@ -1,83 +1,115 @@
 {% extends "base.html" %}
 
-{% block title %}Appointments | {{ app_name }}{% endblock %}
-{% block page_heading %}Appointments and planning{% endblock %}
+{% block title %}Appointments | CareCompass{% endblock %}
+{% block meta_description %}Plan and manage your upcoming doctor visits and consultations.{% endblock %}
 
 {% block content %}
-  <section class="workspace-hero compact-hero premium-surface">
-    <div class="workspace-hero-copy">
-      <span class="eyebrow">Appointments</span>
-      <h1>Plan and track your visits</h1>
-      <p class="section-copy">Keep doctor visits, reminders, and context organized in one timeline.</p>
-    </div>
-    <div class="mini-metrics">
-      <article class="metric-card">
-        <span>Upcoming count</span>
-        <strong>{{ upcoming_count }}</strong>
-      </article>
-      <article class="metric-card">
-        <span>Next visit</span>
-        <strong>{{ next_appointment.date.strftime('%d %b') if next_appointment else 'None' }}</strong>
-      </article>
-    </div>
-  </section>
+  <header class="page-header">
+    <h1>Appointments</h1>
+    <p class="page-subtitle">Schedule upcoming doctor consultations and keep your visit history organized.</p>
+  </header>
 
-  <section class="dashboard-grid dashboard-grid-advanced">
-    <article class="panel premium-surface">
-      <div class="panel-head">
-        <div>
-          <span class="eyebrow">Schedule</span>
-          <h2>New appointment</h2>
+  <div class="grid-12">
+    <!-- Left 8 Columns: Appointments List & Segmented Tabs -->
+    <div class="col-8">
+      <section class="card" aria-labelledby="appointments-list-heading">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+          <h2 id="appointments-list-heading" style="margin: 0;">Scheduled visits</h2>
+          <div class="segmented-control" role="tablist" aria-label="Appointment timeline filter">
+            <button type="button" class="segmented-btn" id="tab-upcoming" role="tab" aria-selected="true" aria-controls="panel-upcoming">
+              Upcoming ({{ upcoming_count }})
+            </button>
+            <button type="button" class="segmented-btn" id="tab-all" role="tab" aria-selected="false" aria-controls="panel-all">
+              All visits ({{ appointments|length }})
+            </button>
+          </div>
         </div>
-      </div>
-      <form method="post" class="stack-form">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <label>
-          <span>Date</span>
-          <input type="date" name="date" min="{{ today_iso }}" required>
-        </label>
-        <label>
-          <span>Time</span>
-          <input type="time" name="time" required>
-        </label>
-        <label>
-          <span>Doctor name</span>
-          <input type="text" name="doctor" maxlength="100" placeholder="Dr. Sharma" required>
-        </label>
-        <label>
-          <span>Notes</span>
-          <textarea name="notes" rows="4" maxlength="500" placeholder="Optional agenda, symptoms, or reminders"></textarea>
-        </label>
-        <button type="submit" class="button primary">Add appointment</button>
-      </form>
-    </article>
 
-    <article class="panel">
-      <div class="panel-head">
-        <div>
-          <span class="eyebrow">Schedule board</span>
-          <h2>Upcoming appointments</h2>
-        </div>
-      </div>
-      {% if appointments %}
-        <div class="appointment-list">
-          {% for appointment in appointments %}
-            <article class="appointment-card">
-              <div class="appointment-info">
-                <strong>{{ appointment.doctor }}</strong>
-                <p>{{ appointment.date.strftime('%d %b %Y') }} at {{ appointment.time }}</p>
-                <small>{{ appointment.notes or 'No notes added.' }}</small>
-              </div>
-              <form method="post" action="{{ url_for('main.delete_appointment', appointment_id=appointment.id) }}" onsubmit="return confirm('Cancel this appointment?')">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="button danger small">Cancel</button>
-              </form>
-            </article>
-          {% endfor %}
-        </div>
-      {% else %}
-        <p class="section-copy">No appointments scheduled yet.</p>
-      {% endif %}
-    </article>
-  </section>
+        {% if appointments %}
+          <div class="appointment-list" id="appointmentsContainer">
+            {% for appointment in appointments %}
+              {% set is_upcoming = (appointment.date.strftime('%Y-%m-%d') >= today_iso) if today_iso else true %}
+              <article class="appointment-card" data-upcoming="{{ 'true' if is_upcoming else 'false' }}">
+                <div class="appointment-card-body">
+                  <div class="date-block" aria-hidden="true">
+                    <span class="date-block-month">{{ appointment.date.strftime('%b') }}</span>
+                    <span class="date-block-day">{{ appointment.date.strftime('%d') }}</span>
+                  </div>
+                  <div class="appointment-details">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
+                      <div class="doctor-name">{{ appointment.doctor }}</div>
+                      {% if appointment.date.strftime('%Y-%m-%d') >= today_iso %}
+                        <span class="status-badge confirmed">Confirmed</span>
+                      {% else %}
+                        <span class="status-badge neutral">Completed</span>
+                      {% endif %}
+                    </div>
+                    <div class="appointment-time">{{ appointment.date.strftime('%A, %d %B %Y') }} at {{ appointment.time }}</div>
+                    {% if appointment.notes %}
+                      <div class="appointment-notes">{{ appointment.notes }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="appointment-card-actions">
+                  <form method="post" action="{{ url_for('main.delete_appointment', appointment_id=appointment.id) }}" class="remove-appointment-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="button" class="button danger small trigger-delete-dialog" data-doctor="{{ appointment.doctor }}" data-date="{{ appointment.date.strftime('%d %b %Y') }}">
+                      Remove
+                    </button>
+                  </form>
+                </div>
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <p>You have no appointments scheduled yet.</p>
+            <p class="muted-text">Use the form to schedule your next visit with your doctor.</p>
+          </div>
+        {% endif %}
+      </section>
+    </div>
+
+    <!-- Right 4 Columns: New Appointment Booking Card -->
+    <div class="col-4">
+      <section class="card" aria-labelledby="new-appointment-heading">
+        <h2 id="new-appointment-heading" class="card-title">Schedule a visit</h2>
+        <form method="post" class="stack-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          
+          <div class="form-group">
+            <label for="app-date" class="input-label">Date</label>
+            <input type="date" id="app-date" name="date" min="{{ today_iso }}" required>
+          </div>
+
+          <div class="form-group">
+            <label for="app-time" class="input-label">Time</label>
+            <input type="time" id="app-time" name="time" required>
+          </div>
+
+          <div class="form-group">
+            <label for="app-doctor" class="input-label">Doctor name</label>
+            <input type="text" id="app-doctor" name="doctor" maxlength="100" placeholder="e.g. Dr. Alistair Sharma" required>
+          </div>
+
+          <div class="form-group">
+            <label for="app-notes" class="input-label">Preparation notes (optional)</label>
+            <textarea id="app-notes" name="notes" rows="3" maxlength="500" placeholder="Agenda, questions, or test results to bring..."></textarea>
+          </div>
+
+          <button type="submit" class="button primary" style="width: 100%;">Add appointment</button>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <!-- Accessible Remove Confirmation Dialog -->
+  <dialog id="deleteAppointmentDialog" class="confirm-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-desc">
+    <h2 id="dialog-title">Remove appointment</h2>
+    <p id="dialog-desc">Are you sure you want to remove this appointment with <strong id="dialog-doctor-name"></strong> on <span id="dialog-appointment-date"></span>? This cannot be undone.</p>
+    <div class="dialog-actions">
+      <button type="button" class="button secondary small" id="cancelDialogBtn">Keep appointment</button>
+      <button type="button" class="button danger small" id="confirmDeleteBtn">Remove</button>
+    </div>
+  </dialog>
 {% endblock %}

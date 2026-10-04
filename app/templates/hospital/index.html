@@ -1,78 +1,68 @@
 {% extends "base.html" %}
 
-{% block title %}Hospital Locator | {{ app_name }}{% endblock %}
-{% block page_heading %}Hospital and care discovery{% endblock %}
+{% block title %}Find Hospital | CareCompass{% endblock %}
+{% block meta_description %}Search and explore nearby hospitals, clinics, and emergency centers by city.{% endblock %}
 
 {% block content %}
-  <section class="workspace-hero compact-hero premium-surface">
-    <div class="workspace-hero-copy">
-      <span class="eyebrow">Hospital locator</span>
-      <h1>Find care centers by city</h1>
-      <p class="section-copy">Search a city to explore nearby care options and view them on the map.</p>
-    </div>
-    <div class="mini-metrics">
-      <article class="metric-card">
-        <span>Search mode</span>
-        <strong>{{ city if city else 'Idle' }}</strong>
-      </article>
-      <article class="metric-card">
-        <span>Visible hospitals</span>
-        <strong>{{ hospital_cards|length }}</strong>
-      </article>
-    </div>
+  <header class="page-header">
+    <h1>Find Hospitals & Care Centers</h1>
+    <p class="page-subtitle">Search by city to locate medical facilities, emergency departments, and specialty care centers.</p>
+  </header>
+
+  <!-- City Search Card -->
+  <section class="card locator-search-card" aria-labelledby="locator-search-heading">
+    <h2 id="locator-search-heading" class="card-title">Search medical centers</h2>
+    <form method="get" class="locator-search-form" action="{{ url_for('main.hospital_locator') }}">
+      <label for="city-input" class="sr-only" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;">City name</label>
+      <input type="text" id="city-input" name="city" value="{{ city }}" placeholder="Enter city (e.g. London, Mumbai, New York)" required>
+      <button type="submit" class="button primary">Search city</button>
+    </form>
   </section>
 
-  <section class="dashboard-grid dashboard-grid-advanced locator-grid">
-    <article class="panel premium-surface">
-      <div class="panel-head">
-        <div>
-          <span class="eyebrow">Search</span>
-          <h2>City-based discovery</h2>
-        </div>
-      </div>
+  {% if hospital_cards %}
+    <div class="hospital-grid">
+      <!-- Left 5 Columns: Hospital Cards List -->
+      <section class="hospital-list" aria-label="Search results for {{ city }}">
+        {% for hospital in hospital_cards %}
+          <article class="hospital-item">
+            <div class="hospital-item-header">
+              <h3 class="hospital-item-title">{{ hospital.name }}</h3>
+              {% if hospital.distance %}
+                <span class="hospital-item-distance">{{ hospital.distance }}</span>
+              {% endif %}
+            </div>
+            <div class="hospital-item-type">{{ hospital.type }}</div>
+            <div class="hospital-item-hours">{{ hospital.hours }}</div>
+            <div>
+              <a class="button secondary small" href="https://www.google.com/maps/search/?api=1&query={{ hospital.coords[0] }},{{ hospital.coords[1] }}" target="_blank" rel="noopener noreferrer">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;" aria-hidden="true"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                Open in Maps
+              </a>
+            </div>
+          </article>
+        {% endfor %}
+      </section>
 
-      <form method="get" class="search-row search-row-elevated">
-        <input type="text" name="city" value="{{ city }}" placeholder="Enter city name" required>
-        <button type="submit" class="button primary">Search</button>
-      </form>
-
-      <div class="finder-info">
-        <p>Use this view to explore a clean map-first experience instead of the old plain form page.</p>
-      </div>
-
-      {% if hospital_cards %}
-        <div class="hospital-card-list">
-          {% for hospital in hospital_cards %}
-            <article class="hospital-card" style="--card-accent: {{ hospital.accent }}">
-              <span class="hospital-distance">{{ hospital.distance }}</span>
-              <strong>{{ hospital.name }}</strong>
-              <p>{{ hospital.type }}</p>
-              <small>{{ hospital.hours }}</small>
-            </article>
-          {% endfor %}
-        </div>
-      {% else %}
-        <p class="section-copy">Search a city to load care center suggestions and the interactive map.</p>
-      {% endif %}
-    </article>
-
-    <article class="panel map-panel">
-      <div class="panel-head">
-        <div>
-          <span class="eyebrow">Map</span>
-          <h2>Care coverage view</h2>
-        </div>
-      </div>
-      {% if map_html %}
-        <div class="map-shell elevated-map">
+      <!-- Right 7 Columns: Interactive Map View -->
+      <section class="map-container-frame" aria-label="Interactive map view of care centers">
+        {% if map_html %}
           {{ map_html|safe }}
-        </div>
-      {% else %}
-        <div class="map-placeholder">
-          <div class="map-placeholder-core"></div>
-          <p>Map preview appears here after you search a city.</p>
-        </div>
-      {% endif %}
-    </article>
-  </section>
+        {% else %}
+          <div class="empty-state" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <p>Search a city to load the map preview.</p>
+          </div>
+        {% endif %}
+      </section>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p>{% if city %}No hospital centers found for "{{ city }}". Please check spelling or try another city.{% else %}Search a city above to explore nearby care centers, emergency facilities, and interactive coverage maps.{% endif %}</p>
+    </div>
+  {% endif %}
+
+  <!-- Emergency Footer Banner -->
+  <div class="emergency-banner" style="margin-top: 32px;" role="alert">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+    <span><strong>Emergency:</strong> If you are experiencing chest pain, severe shortness of breath, sudden weakness, or heavy bleeding, call <a href="tel:112">112</a> immediately.</span>
+  </div>
 {% endblock %}
