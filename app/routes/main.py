@@ -14,6 +14,7 @@ from app.services.ai import (
     match_disease,
     normalize_analysis_payload,
     parse_ai_analysis,
+    scan_emergency_red_flags,
     validate_symptoms,
 )
 from app.services.hospital import build_hospital_map
@@ -43,11 +44,17 @@ def build_analysis_prompt(patient_name, symptoms, followup_responses=None):
 
 
 def save_consultation(user_id, symptoms, followup_responses, analysis):
+    normalized = normalize_analysis_payload(analysis)
+    if not normalized.get("red_flag_alert"):
+        scan = scan_emergency_red_flags(symptoms)
+        if scan.get("is_emergency"):
+            normalized["red_flag_alert"] = scan
+
     consultation = Consultation(
         user_id=user_id,
         symptoms=symptoms,
         followup_responses=json.dumps(followup_responses) if followup_responses else None,
-        diagnosis=json.dumps(normalize_analysis_payload(analysis))
+        diagnosis=json.dumps(normalized)
     )
     db.session.add(consultation)
     db.session.commit()
@@ -412,3 +419,58 @@ def delete_appointment(appointment_id):
     db.session.commit()
     flash("Appointment cancelled successfully.", "success")
     return redirect(url_for("main.appointment"))
+
+
+@main_bp.route("/appointment/<int:appointment_id>/calendar.ics")
+@main_bp.route("/appointments/<int:appointment_id>/calendar.ics")
+@login_required
+def download_appointment_ics(appointment_id):
+    appointment = Appointment.query.filter_by(id=appointment_id, user_id=current_user.id).first_or_404()
+
+    start_dt = datetime.datetime.combine(appointment.date, datetime.time(9, 0))
+    time_str = (appointment.time or "").strip()
+    try:
+        if ":" in time_str:
+            parts = time_str.split(":")
+            hour = int(parts[0])
+            minute = int(parts[1][:2])
+            start_dt = datetime.datetime.combine(appointment.date, datetime.time(hour, minute))
+    except Exception:
+        pass
+
+    end_dt = start_dt + datetime.timedelta(hours=1)
+    dtstamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    dtstart = start_dt.strftime("%Y%m%dT%H%M%S")
+    dtend = end_dt.strftime("%Y%m%dT%H%M%S")
+
+    clean_notes = (appointment.notes or "Scheduled clinical consultation").replace("\n", " ").replace("\r", "")
+    clean_doctor = (appointment.doctor or "Consultant").replace("\n", " ").replace("\r", "")
+
+    ics_lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//CareCompass AI//Medical Appointment Calendar//EN",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        "BEGIN:VEVENT",
+        f"UID:carecompass-appt-{appointment.id}@{request.host}",
+        f"DTSTAMP:{dtstamp}",
+        f"DTSTART:{dtstart}",
+        f"DTEND:{dtend}",
+        f"SUMMARY:Medical Visit: {clean_doctor}",
+        f"DESCRIPTION:{clean_notes} (Patient: {current_user.display_name})",
+        "LOCATION:Clinical Practice / Hospital",
+        "STATUS:CONFIRMED",
+        "END:VEVENT",
+        "END:VCALENDAR",
+    ]
+    ics_body = "\r\n".join(ics_lines) + "\r\n"
+
+    return Response(
+        ics_body,
+        mimetype="text/calendar",
+        headers={
+            "Content-Disposition": f'attachment; filename="appointment_{appointment.date.strftime("%Y%m%d")}_{appointment.id}.ics"',
+            "Content-Type": "text/calendar; charset=utf-8",
+        },
+    )

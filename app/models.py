@@ -19,6 +19,8 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=utc_now)
     consultations = db.relationship("Consultation", backref="user", lazy=True, cascade="all, delete-orphan")
     appointments = db.relationship("Appointment", backref="user", lazy=True, cascade="all, delete-orphan")
+    medical_profile = db.relationship("MedicalProfile", backref="user", uselist=False, cascade="all, delete-orphan")
+    medications = db.relationship("Medication", backref="user", lazy=True, cascade="all, delete-orphan")
 
     @property
     def display_name(self):
@@ -68,3 +70,46 @@ class Appointment(db.Model):
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=utc_now)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+
+class MedicalProfile(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), unique=True, nullable=False)
+    blood_group = db.Column(db.String(10))
+    allergies = db.Column(db.Text)
+    chronic_conditions = db.Column(db.Text)
+    emergency_contact_name = db.Column(db.String(100))
+    emergency_contact_phone = db.Column(db.String(50))
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+
+    def to_dict(self):
+        return {
+            "blood_group": self.blood_group or "",
+            "allergies": self.allergies or "",
+            "chronic_conditions": self.chronic_conditions or "",
+            "emergency_contact_name": self.emergency_contact_name or "",
+            "emergency_contact_phone": self.emergency_contact_phone or "",
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class Medication(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    dosage = db.Column(db.String(60))
+    frequency = db.Column(db.String(60))
+    instructions = db.Column(db.Text)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=utc_now)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "dosage": self.dosage or "",
+            "frequency": self.frequency or "",
+            "instructions": self.instructions or "",
+            "is_active": self.is_active,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }

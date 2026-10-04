@@ -364,3 +364,89 @@ def test_analysis_points_split_messy_model_output():
 
     assert len(points) >= 2
     assert any("Migraine" in point for point in points)
+
+
+def test_scan_emergency_red_flags():
+    # Cardiac emergency trigger
+    result = ai_service.scan_emergency_red_flags("I have crushing chest pain radiating to left arm")
+    assert result["is_emergency"] is True
+    assert result["severity"] == "CRITICAL"
+    assert len(result["flags"]) > 0
+
+    # Benign symptom
+    benign = ai_service.scan_emergency_red_flags("Mild headache since morning after reading screen")
+    assert benign["is_emergency"] is False
+    assert benign["severity"] == "STANDARD"
+
+
+def test_download_appointment_ics_calendar(client):
+    register_user(client)
+    login_user(client)
+    token = extract_csrf_token(client.get("/appointment").get_data(as_text=True))
+    future_date = "2026-11-20"
+    client.post("/appointment", data={
+        "csrf_token": token,
+        "doctor": "Dr. Sarah Adams",
+        "date": future_date,
+        "time": "14:30",
+        "notes": "Annual cardiology review",
+    }, follow_redirects=True)
+
+    with main2.app.app_context():
+        from app.models import Appointment
+        appt = Appointment.query.first()
+        assert appt is not None
+        appt_id = appt.id
+
+    res = client.get(f"/appointment/{appt_id}/calendar.ics")
+    assert res.status_code == 200
+    assert res.mimetype == "text/calendar"
+    ics_text = res.get_data(as_text=True)
+    assert "BEGIN:VCALENDAR" in ics_text
+    assert "SUMMARY:Medical Visit: Dr. Sarah Adams" in ics_text
+    assert "DTSTART:20261120T143000" in ics_text
+
+
+def test_medical_profile_and_medications_models():
+    with main2.app.app_context():
+        from app.models import User, MedicalProfile, Medication
+        user = User(username="testpatient", email="patient@clinic.com")
+        user.set_password("SecurePass123")
+        main2.db.session.add(user)
+        main2.db.session.commit()
+
+        profile = MedicalProfile(
+            user_id=user.id,
+            blood_group="O+",
+            allergies="Penicillin",
+            chronic_conditions="Asthma",
+            emergency_contact_name="Jane Doe",
+            emergency_contact_phone="+1-555-0199",
+        )
+        med = Medication(
+            user_id=user.id,
+            name="Albuterol Inhaler",
+            dosage="90 mcg",
+            frequency="As needed",
+        )
+        main2.db.session.add(profile)
+        main2.db.session.add(med)
+        main2.db.session.commit()
+
+        assert user.medical_profile.blood_group == "O+"
+        assert len(user.medications) == 1
+        assert user.medications[0].name == "Albuterol Inhaler"
+
+
+def test_api_v1_endpoints(client):
+    # Health endpoint
+    res = client.get("/api/v1/health")
+    assert res.status_code == 200
+    assert res.get_json()["status"] == "success"
+
+    # Triage scan endpoint
+    scan_res = client.post("/api/v1/triage/scan", json={"symptoms": "severe chest pain and breathlessness"})
+    assert scan_res.status_code == 200
+    scan_data = scan_res.get_json()["data"]
+    assert scan_data["is_emergency"] is True
+

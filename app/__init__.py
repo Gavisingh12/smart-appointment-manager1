@@ -257,6 +257,11 @@ def register_security(app):
         if request.method in {"POST", "PUT", "PATCH", "DELETE"}:
             if app.config.get("TESTING"):
                 return
+            if request.path.startswith("/api/"):
+                token = request.headers.get("X-CSRFToken") or request.form.get("csrf_token")
+                if token and not validate_csrf_token(token):
+                    abort(400, description="Invalid CSRF token.")
+                return
             token = request.form.get("csrf_token") or request.headers.get("X-CSRFToken")
             if not validate_csrf_token(token):
                 abort(400, description="Invalid or missing CSRF token.")
@@ -328,8 +333,10 @@ def register_error_handlers(app):
 
 
 def register_blueprints(app):
+    from app.routes.api import api_bp
     from app.routes.auth import auth_bp
     from app.routes.main import main_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
+    app.register_blueprint(api_bp)

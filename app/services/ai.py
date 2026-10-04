@@ -11,6 +11,14 @@ ai_cache = OrderedDict()
 logger = logging.getLogger(__name__)
 gemini_api_key = None
 
+EMERGENCY_RED_FLAGS = [
+    (r"\b(crushing\s+chest\s+pain|chest\s+pain|radiating\s+to\s+(?:left\s+)?arm|heart\s+attack|cardiac\s+arrest)\b", "Severe chest discomfort or acute cardiac risk"),
+    (r"\b(can'?t\s+breathe|severe\s+shortness\s+of\s+breath|gasping\s+for\s+air|suffocating|turning\s+blue|cyanosis)\b", "Acute respiratory distress"),
+    (r"\b(facial\s+droop|slurred\s+speech|sudden\s+weakness\s+on\s+one\s+side|loss\s+of\s+consciousness|passed\s+out|unconscious)\b", "Acute neurological deficit or stroke warning"),
+    (r"\b(coughing\s+(?:up\s+)?blood|vomiting\s+blood|uncontrollable\s+bleeding|severe\s+head\s+injury)\b", "Acute hemorrhage or traumatic injury"),
+    (r"\b(throat\s+closing|swollen\s+throat|anaphylaxis|swollen\s+tongue)\b", "Suspected anaphylaxis or airway compromise"),
+]
+
 ANALYSIS_DEFAULTS = {
     "presenting_complaint": "No presenting complaint was generated.",
     "differential_diagnoses": "No differential diagnoses were generated.",
@@ -18,7 +26,8 @@ ANALYSIS_DEFAULTS = {
     "treatment": "No treatment guidance was generated.",
     "medications": "No medication guidance was generated.",
     "precautions": "No precautions were generated.",
-    "disclaimer": "This is an AI-generated analysis and should not replace professional medical advice."
+    "disclaimer": "This is an AI-generated analysis and should not replace professional medical advice.",
+    "red_flag_alert": None,
 }
 ANALYSIS_LIST_KEYS = {
     "differential_diagnoses",
@@ -114,11 +123,43 @@ def get_gemini_client():
     return genai
 
 
-def normalize_analysis_payload(payload):
+def scan_emergency_red_flags(symptoms_text):
+    text = (symptoms_text or "").casefold()
+    detected = []
+    for pattern, description in EMERGENCY_RED_FLAGS:
+        if re.search(pattern, text):
+            detected.append(description)
+    if detected:
+        return {
+            "is_emergency": True,
+            "severity": "CRITICAL",
+            "flags": detected,
+            "advisory": (
+                "Urgent Medical Alert: Symptoms include clinical red-flag criteria. "
+                "Do not wait for standard clinic hours. Call emergency services (999 / 911 / 112) "
+                "or proceed to the nearest emergency department immediately."
+            ),
+        }
     return {
+        "is_emergency": False,
+        "severity": "STANDARD",
+        "flags": [],
+        "advisory": None,
+    }
+
+
+def normalize_analysis_payload(payload):
+    result = {
         key: payload.get(key) or default
         for key, default in ANALYSIS_DEFAULTS.items()
     }
+    # If red_flag_alert is not explicitly passed, scan the presenting complaint
+    if not result.get("red_flag_alert"):
+        complaint = result.get("presenting_complaint", "")
+        scan = scan_emergency_red_flags(complaint)
+        if scan["is_emergency"]:
+            result["red_flag_alert"] = scan
+    return result
 
 
 def analysis_text(value):
