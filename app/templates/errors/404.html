@@ -5,7 +5,7 @@
 {% block content %}
   <section class="panel error-panel">
     <h1>This page does not exist</h1>
-    <p>The route you requested could not be found.</p>
+    <p>The route you requested could not be found. Path: [{{ request.path }}] PATH_INFO: [{{ request.environ.get('PATH_INFO') }}] SCRIPT_NAME: [{{ request.environ.get('SCRIPT_NAME') }}] REQ_URI: [{{ request.environ.get('REQUEST_URI') }}]</p>
     <a class="button primary" href="{{ url_for('main.home') }}">Back to home</a>
   </section>
 {% endblock %}
