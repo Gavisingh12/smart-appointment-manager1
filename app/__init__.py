@@ -26,12 +26,39 @@ logging.basicConfig(
 )
 
 
+class VercelWSGIMiddleware:
+    """Strip Vercel rewrite prefix so Flask routing sees the real path.
+
+    vercel.json rewrites /(.*) -> /api/index/$1, so Vercel sets
+    PATH_INFO=/api/index/... which results in 404 without this middleware.
+    """
+
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
+
+    def __call__(self, environ, start_response):
+        environ["SCRIPT_NAME"] = ""
+        path = environ.get("PATH_INFO") or "/"
+        for prefix in ("/api/index.py", "/api/index"):
+            if path == prefix or path == prefix + "/":
+                path = "/"
+                break
+            if path.startswith(prefix + "/"):
+                path = path[len(prefix):]
+                break
+        if not path.startswith("/"):
+            path = "/" + path
+        environ["PATH_INFO"] = path
+        return self.wsgi_app(environ, start_response)
+
+
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(get_config())
     validate_runtime_settings(app)
     configure_error_monitoring(app)
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
+    app.wsgi_app = VercelWSGIMiddleware(app.wsgi_app)
 
     db.init_app(app)
     migrate.init_app(app, db)
