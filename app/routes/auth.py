@@ -340,7 +340,7 @@ def register():
         return redirect(url_for("main.dashboard"))
 
     if request.method == "POST":
-        username = normalize_name(request.form.get("username"))
+        username = normalize_name(request.form.get("username") or request.form.get("name"))
         email = normalize_email(request.form.get("email"))
         password = request.form.get("password", "")
 

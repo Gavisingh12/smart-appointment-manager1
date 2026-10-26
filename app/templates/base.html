@@ -24,7 +24,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v=20261018_v1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v=20261026_v4">
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -366,11 +366,12 @@
         </div>
       </header>
 
-      <main class="site-container public-main" id="main-content">
+      <main class="site-container public-main {% if request.endpoint in ['auth.login', 'auth.register', 'auth.verify_otp', 'auth.forgot_password', 'auth.reset_password'] %}public-main-auth{% endif %}" id="main-content">
         {% include "partials/flash.html" %}
         {{ self.content() }}
       </main>
 
+      {% if request.endpoint not in ['auth.login', 'auth.register', 'auth.verify_otp', 'auth.forgot_password', 'auth.reset_password'] %}
       <footer class="public-footer">
         <div class="site-container footer-inner">
           <div class="footer-public-links" style="display: flex; gap: 20px; justify-content: center; margin-bottom: 14px; flex-wrap: wrap; font-size: 13.5px; font-weight: 500;">
@@ -385,6 +386,7 @@
           <p class="footer-confidential">&copy; 2026 Care Cliniq. All rights reserved.</p>
         </div>
       </footer>
+      {% endif %}
     {% endif %}
 
     <script src="{{ url_for('static', filename='js/ui.js') }}"></script>

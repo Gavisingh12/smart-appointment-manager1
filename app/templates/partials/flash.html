@@ -1,9 +1,51 @@
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
-    <section class="flash-stack">
+    <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true">
       {% for category, message in messages %}
-        <div class="flash flash-{{ category or 'info' }}">{{ message }}</div>
+        <div class="toast-item toast-{{ category or 'info' }}" id="toast-{{ loop.index }}" role="alert">
+          <div class="toast-body">
+            <span class="toast-icon" aria-hidden="true">
+              {% if category in ['success'] %}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              {% elif category in ['danger', 'error'] %}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              {% elif category in ['warning', 'caution'] %}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              {% else %}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              {% endif %}
+            </span>
+            <span class="toast-message">{{ message }}</span>
+            <button type="button" class="toast-close-btn" onclick="dismissToast(this.closest('.toast-item'))" aria-label="Close notification">&times;</button>
+          </div>
+          <div class="toast-progress-bar">
+            <div class="toast-progress-fill"></div>
+          </div>
+        </div>
       {% endfor %}
-    </section>
+    </div>
+
+    <script>
+      function dismissToast(toastEl) {
+        if (!toastEl) return;
+        toastEl.classList.add('toast-fade-out');
+        setTimeout(function() {
+          toastEl.remove();
+          var container = document.getElementById('toastContainer');
+          if (container && container.children.length === 0) {
+            container.remove();
+          }
+        }, 320);
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        var toasts = document.querySelectorAll('.toast-item');
+        toasts.forEach(function(toast) {
+          setTimeout(function() {
+            dismissToast(toast);
+          }, 4500);
+        });
+      });
+    </script>
   {% endif %}
 {% endwith %}

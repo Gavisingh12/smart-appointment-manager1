@@ -1,203 +1,63 @@
 {% extends "base.html" %}
 
 {% block title %}Sign In | {{ app_name }}{% endblock %}
-{% block meta_description %}Access your personal health journal, consultation briefs, and upcoming clinic visits.{% endblock %}
+{% block meta_description %}Access your personal health space, consultation summaries, and upcoming clinic visits.{% endblock %}
 
 {% block content %}
 <div class="auth-page-wrapper">
-  <section class="auth-shell">
-    
-    <!-- LEFT COLUMN: Engaging Healthcare Visual Showcase -->
-    <div class="auth-showcase-column">
-      <div class="showcase-header-wrap">
-        <div class="showcase-pill">
+  <div class="auth-portal-container">
+    <div class="portal-card">
+      
+      <!-- Top Brand Header with Badge -->
+      <div class="portal-header">
+        <div class="portal-badge">
           <span class="live-dot-pulse" aria-hidden="true"></span>
-          <span>Your Health Space</span>
+          <span>Care Cliniq Patient Portal</span>
         </div>
-        <h1 class="showcase-title">
-          Never feel unprepared during a doctor visit again.
-        </h1>
-        <p class="showcase-subtitle">
-          Write down how you feel in simple words. Get a neat 1-minute summary for your doctor, find trusted clinics near you, and organize your medicines in one place.
+        <h1 class="portal-title">Welcome Back</h1>
+        <p class="portal-subtitle">Sign in to view your health summaries &amp; doctor visits</p>
+      </div>
+
+      <!-- Direct Password Login Form -->
+      <form method="post" action="{{ url_for('auth.login') }}" class="stack-form auth-direct-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div class="form-group-modern">
+          <label for="identifier">Email Address or Username</label>
+          <div class="input-icon-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="input-prefix-icon" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input type="text" id="identifier" name="identifier" placeholder="e.g. aarav.sharma@gmail.com" class="input-modern" required autofocus>
+          </div>
+        </div>
+
+        <div class="form-group-modern">
+          <div class="form-label-row">
+            <label for="password">Password</label>
+            {% if password_reset_available %}
+              <a href="{{ url_for('auth.forgot_password') }}" class="auth-link-subtle">Forgot?</a>
+            {% endif %}
+          </div>
+          <div class="input-icon-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="input-prefix-icon" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="password" name="password" placeholder="Enter your password" class="input-modern" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-auth-primary">
+          <span>Sign In</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </form>
+
+      <!-- Footer / Switch to Register -->
+      <div class="auth-card-footer">
+        <p class="auth-switch-text">
+          Don't have an account? 
+          <a href="{{ url_for('auth.register') }}" class="auth-switch-link">Create free account &rarr;</a>
         </p>
       </div>
 
-      <!-- Hero Visual Card with Floating Glassmorphic Badges -->
-      <div class="showcase-visual-frame">
-        <img src="{{ url_for('static', filename='images/auth_showcase_visual.jpg') }}" 
-             alt="Doctor and patient consultation in a modern wellness clinic" 
-             class="showcase-hero-img"
-             loading="eager">
-        
-        <!-- Floating Glassmorphism Badge 1: 1-Minute Summary -->
-        <div class="floating-glass-badge badge-top-right">
-          <div class="badge-icon-wrap icon-green">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-          </div>
-          <div>
-            <strong>1-Minute Doctor Summary</strong>
-            <span>Ready for your appointment</span>
-          </div>
-        </div>
-
-        <!-- Floating Glassmorphism Badge 2: Patient Trust -->
-        <div class="floating-glass-badge badge-bottom-left">
-          <div class="badge-icon-wrap icon-amber">
-            ⭐
-          </div>
-          <div>
-            <strong>Trusted by 10,000+ Patients</strong>
-            <span>100% Private &amp; Secure</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 4 Compact Engaging Feature Badges -->
-      <div class="showcase-features-row">
-        <div class="showcase-feature-chip">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <span>100% Private</span>
-        </div>
-        <div class="showcase-feature-chip">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
-          <span>Doctor Notes</span>
-        </div>
-        <div class="showcase-feature-chip">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
-          <span>Calendar Sync</span>
-        </div>
-        <div class="showcase-feature-chip">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>
-          <span>Find Doctors</span>
-        </div>
-      </div>
     </div>
-
-    <!-- RIGHT COLUMN: Modern, Elevated Glass Card -->
-    <div class="auth-form-column">
-      <div class="auth-premium-card">
-        <!-- Card Header -->
-        <div class="auth-card-top">
-          <div class="auth-icon-circle">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-          </div>
-          <div class="auth-title-box">
-            <h2 class="auth-title">Welcome Back</h2>
-            <p class="auth-desc">Sign in to your private health space</p>
-          </div>
-          <span class="auth-secure-tag">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            Secure
-          </span>
-        </div>
-
-        <!-- Auth Method Selector Tabs -->
-        <div class="auth-segmented-control" role="tablist" aria-label="Sign in method">
-          <button type="button" class="segment-btn active" id="tabEmailOtpBtn" onclick="switchAuthTab('otp')" role="tab" aria-selected="true">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            <span>Email Code (OTP)</span>
-          </button>
-          <button type="button" class="segment-btn" id="tabPasswordBtn" onclick="switchAuthTab('password')" role="tab" aria-selected="false">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            <span>Password</span>
-          </button>
-        </div>
-
-        <!-- Method 1: Email OTP Code Form (Default) -->
-        <div id="otpLoginForm">
-          <form method="post" action="{{ url_for('auth.send_otp') }}" class="stack-form">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="purpose" value="login">
-            
-            <div class="form-group-modern">
-              <label for="otpEmail">Enter your Email Address</label>
-              <div class="input-icon-wrap">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="input-prefix-icon" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                <input type="email" id="otpEmail" name="email" placeholder="e.g. sarah@example.com" class="input-modern" required autofocus>
-              </div>
-              <span class="field-hint-text">
-                We'll email you a 6-digit login code to sign in instantly without passwords.
-              </span>
-            </div>
-
-            <button type="submit" class="btn-auth-primary">
-              <span>Send Login Code</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-            </button>
-          </form>
-        </div>
-
-        <!-- Method 2: Traditional Password Form (Hidden by default) -->
-        <div id="passwordLoginForm" style="display: none;">
-          <form method="post" action="{{ url_for('auth.login') }}" class="stack-form">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="form-group-modern">
-              <label for="identifier">Email address or Username</label>
-              <div class="input-icon-wrap">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="input-prefix-icon" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                <input type="text" id="identifier" name="identifier" placeholder="e.g. sarah@example.com or Sarah" class="input-modern">
-              </div>
-            </div>
-            <div class="form-group-modern">
-              <div class="form-label-row">
-                <label for="password">Password</label>
-                {% if password_reset_available %}
-                  <a href="{{ url_for('auth.forgot_password') }}" class="auth-link-subtle">Forgot?</a>
-                {% endif %}
-              </div>
-              <div class="input-icon-wrap">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="input-prefix-icon" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                <input type="password" id="password" name="password" placeholder="Enter your password" class="input-modern">
-              </div>
-            </div>
-
-            <button type="submit" class="btn-auth-primary">
-              <span>Sign In with Password</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-            </button>
-          </form>
-        </div>
-
-        <!-- Footer / Switch to Register -->
-        <div class="auth-card-footer">
-          <p class="auth-switch-text">
-            New to Care Cliniq? 
-            <a href="{{ url_for('auth.register') }}" class="auth-switch-link">Create free account &rarr;</a>
-          </p>
-          <div class="auth-privacy-guarantee">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            <span>100% Private &bull; 256-Bit SSL Encrypted Session</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </section>
+  </div>
 </div>
-
-<script>
-  function switchAuthTab(method) {
-    const otpTab = document.getElementById('tabEmailOtpBtn');
-    const passTab = document.getElementById('tabPasswordBtn');
-    const otpForm = document.getElementById('otpLoginForm');
-    const passForm = document.getElementById('passwordLoginForm');
-
-    if (method === 'otp') {
-      otpTab.classList.add('active');
-      passTab.classList.remove('active');
-      otpForm.style.display = 'block';
-      passForm.style.display = 'none';
-      document.getElementById('otpEmail').focus();
-    } else {
-      passTab.classList.add('active');
-      otpTab.classList.remove('active');
-      otpForm.style.display = 'none';
-      passForm.style.display = 'block';
-      document.getElementById('identifier').focus();
-    }
-  }
-</script>
 {% endblock %}
