@@ -1,1 +1,1 @@
-# Service package for CareCompass AI
+# Service package for Care Cliniq

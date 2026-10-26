@@ -1,6 +1,7 @@
 import datetime
 import os
 from pathlib import Path
+# pyrefly: ignore[missing-import]
 from dotenv import load_dotenv
 
 
@@ -11,7 +12,7 @@ load_dotenv(BASE_DIR / ".env")
 # Vercel Functions have a read-only deployment bundle. Only /tmp is writable
 # during a request, and production uses PostgreSQL rather than this local path.
 INSTANCE_DIR = (
-    Path("/tmp") / "carecompass-ai"
+    Path("/tmp") / "carecliniq"
     if os.environ.get("VERCEL")
     else BASE_DIR / "instance"
 )
@@ -118,11 +119,11 @@ class BaseConfig:
     SITE_URL = os.environ.get("SITE_URL", "").rstrip("/")
     GA_MEASUREMENT_ID = os.environ.get("GA_MEASUREMENT_ID", "").strip()
     SENTRY_DSN = os.environ.get("SENTRY_DSN", "").strip()
-    APP_NAME = "CareCompass AI"
-    BRAND_TAGLINE = "Smart medical support and care planning"
+    APP_NAME = "Care Cliniq"
+    BRAND_TAGLINE = "Smart health summaries for your doctor visits"
     SEO_DEFAULT_DESCRIPTION = (
-        "CareCompass AI is a polished medical support dashboard for symptom intake, "
-        "consultation history, appointments, PDF exports, and hospital discovery."
+        "Care Cliniq helps you organize your symptoms, get clear 1-minute doctor summaries, "
+        "find trusted clinics and manage medications in one place."
     )
     DEBUG = env_bool("FLASK_DEBUG", True)
     TEMPLATES_AUTO_RELOAD = True

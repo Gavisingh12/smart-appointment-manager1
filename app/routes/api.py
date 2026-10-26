@@ -1,13 +1,91 @@
 import datetime
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, jsonify, request
 from flask_login import current_user, login_required
 
 from app.extensions import db
 from app.models import Appointment, MedicalProfile, Medication
 from app.services.ai import scan_emergency_red_flags
+from app.services.clinical_kb import (
+    get_medication_card,
+    lookup_disease,
+    match_brands_to_catalog,
+    build_consultation_briefing,
+)
 
 
 api_bp = Blueprint("api_v1", __name__, url_prefix="/api/v1")
+
+
+@api_bp.route("/clinical/medication-card", methods=["GET", "POST"])
+def api_medication_card():
+    """
+    Return structured medication card for a disease.
+    Includes: generic drug, Indian brands, dosage, meal timing, max dose,
+    prescription type, precautions, home care, lab tests, emergency flags,
+    and pharmacy catalog matches.
+
+    GET  /api/v1/clinical/medication-card?disease=Migraine+with+Aura
+    POST /api/v1/clinical/medication-card  {"disease": "Type 2 Diabetes Mellitus"}
+    """
+    if request.method == "POST":
+        data = request.get_json(silent=True) or {}
+        disease_name = (data.get("disease") or "").strip()
+    else:
+        disease_name = (request.args.get("disease") or "").strip()
+
+    if not disease_name:
+        return jsonify({"status": "error", "message": "disease parameter is required"}), 400
+
+    card = get_medication_card(disease_name)
+    if not card:
+        return jsonify({
+            "status": "not_found",
+            "message": f"No clinical data found for: {disease_name}",
+            "data": None
+        }), 404
+
+    return jsonify({"status": "success", "data": card}), 200
+
+
+@api_bp.route("/clinical/lookup", methods=["GET"])
+def api_disease_lookup():
+    """
+    Return full clinical profile for a disease from the knowledge base.
+    GET /api/v1/clinical/lookup?disease=Acute+Viral+Fever
+    """
+    disease_name = (request.args.get("disease") or "").strip()
+    if not disease_name:
+        return jsonify({"status": "error", "message": "disease parameter is required"}), 400
+
+    profile = lookup_disease(disease_name)
+    if not profile:
+        return jsonify({"status": "not_found", "data": None}), 404
+
+    # Return a safe subset (exclude huge symptom text for bandwidth)
+    safe_profile = {
+        "name": profile.get("name", disease_name),
+        "hindi_names": profile.get("hindi_names", ""),
+        "specialty_category": profile.get("specialty_category", ""),
+        "typical_duration": profile.get("typical_duration", ""),
+        "symptoms_list": profile.get("symptoms_list", [])[:8],
+        "clarifying_questions": profile.get("clarifying_questions", []),
+        "generic_drug": profile.get("generic_drug", ""),
+        "indian_brands": profile.get("indian_brands", []),
+        "strength_mg": profile.get("strength_mg", ""),
+        "dosage_frequency": profile.get("dosage_frequency", ""),
+        "meal_timing": profile.get("meal_timing", ""),
+        "duration_days": profile.get("duration_days", ""),
+        "prescription_type": profile.get("prescription_type", ""),
+        "max_safe_limit_24h": profile.get("max_safe_limit_24h", ""),
+        "supportive_medicines": profile.get("supportive_medicines", ""),
+        "investigations": profile.get("investigations", [])[:6],
+        "precautions": profile.get("precautions", ""),
+        "home_care_advice": profile.get("home_care_advice", []),
+        "emergency_flags": profile.get("emergency_flags", []),
+    }
+    return jsonify({"status": "success", "data": safe_profile}), 200
+
+
 
 
 @api_bp.route("/health", methods=["GET"])
@@ -225,3 +303,16 @@ def api_delete_medication(medication_id):
         "status": "success",
         "message": "Medication removed successfully."
     }), 200
+
+
+@api_bp.route("/locations/suggest", methods=["GET"])
+def api_location_suggest():
+    """Return fast autocomplete suggestions for Indian cities, districts, towns, and villages."""
+    query = (request.args.get("q") or "").strip()
+    from app.services.india_geo import suggest_locations
+    return jsonify({
+        "status": "success",
+        "query": query,
+        "suggestions": suggest_locations(query)
+    }), 200
+

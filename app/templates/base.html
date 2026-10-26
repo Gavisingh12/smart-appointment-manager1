@@ -3,95 +3,389 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    {% set seo_title %}{% block title %}CareCompass{% endblock %}{% endset %}
+    {% set seo_title %}{% block title %}Care Cliniq{% endblock %}{% endset %}
     {% set seo_description %}{% block meta_description %}{{ seo_default_description }}{% endblock %}{% endset %}
     <title>{{ seo_title|trim }}</title>
     <meta name="description" content="{{ seo_description|trim }}">
-    <meta name="theme-color" content="#F4F6F8">
+    <meta name="theme-color" content="#F8FAF8">
     <meta property="og:type" content="website">
     <meta property="og:title" content="{{ seo_title|trim }}">
     <meta property="og:description" content="{{ seo_description|trim }}">
-    <meta property="og:url" content="{{ canonical_url }}">
+    <meta property="og:site_name" content="Care Cliniq">
+    <meta property="og:locale" content="en_IN">
+    <meta property="og:image" content="{{ url_for('static', filename='brand/og-card.svg', _external=True) }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ seo_title|trim }}">
+    <meta name="twitter:description" content="{{ seo_description|trim }}">
+    <meta name="twitter:image" content="{{ url_for('static', filename='brand/og-card.svg', _external=True) }}">
     <link rel="canonical" href="{{ canonical_url }}">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='brand/favicon.svg') }}">
     <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v=20261018_v1">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "MedicalOrganization",
+          "@id": "{{ url_for('main.home', _external=True) }}#organization",
+          "name": "Care Cliniq",
+          "url": "{{ url_for('main.home', _external=True) }}",
+          "logo": "{{ url_for('static', filename='brand/favicon.svg', _external=True) }}",
+          "description": "Smart health summaries for doctor visits, hospital locator, verified medicines, and health records.",
+          "medicalSpecialty": [
+            "https://schema.org/PrimaryCare",
+            "https://schema.org/Emergency",
+            "https://schema.org/Pharmacy"
+          ],
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+91-1800-CARE-CLINIQ",
+            "contactType": "support",
+            "areaServed": "IN",
+            "availableLanguage": ["English", "Hindi"]
+          }
+        },
+        {
+          "@type": "MedicalWebPage",
+          "@id": "{{ canonical_url }}#webpage",
+          "url": "{{ canonical_url }}",
+          "name": "{{ seo_title|trim }}",
+          "description": "{{ seo_description|trim }}",
+          "isPartOf": {
+            "@id": "{{ url_for('main.home', _external=True) }}#organization"
+          },
+          "reviewedBy": {
+            "@type": "Organization",
+            "name": "Care Cliniq Advisory Board"
+          },
+          "specialty": "https://schema.org/PrimaryCare"
+        }
+      ]
+    }
+    </script>
+    <script>
+      (function() {
+        try {
+          var match = document.cookie.match(/(?:^|; )cc_sidebar_collapsed=([^;]*)/);
+          var isCol = match ? (match[1] === '1') : (localStorage.getItem('cc_sidebar_collapsed') === 'true');
+          if (isCol) {
+            document.documentElement.classList.add('sidebar-is-collapsed');
+          }
+        } catch(e) {}
+      })();
+    </script>
     {% block head %}{% endblock %}
   </head>
   {% set is_authenticated = current_user.is_authenticated %}
-  <body class="{% block body_class %}{% endblock %}">
-    <header class="site-header">
-      <div class="site-container nav-shell">
-        <a class="brand-lockup" href="{{ url_for('main.dashboard') if is_authenticated else url_for('main.home') }}">
-          <div class="brand-emblem" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M10 4h4v6h6v4h-6v6h-4v-6H4v-4h6V4z"/>
-            </svg>
-          </div>
-          <span class="brand-title">CareCompass</span>
-        </a>
+  {% set is_sidebar_collapsed = (request.cookies.get('cc_sidebar_collapsed') == '1') %}
+  <body class="{% block body_class %}{% endblock %} {% if is_authenticated %}has-sidebar{% endif %} preload">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
 
-        {% if is_authenticated %}
-          {% set name_parts = (current_user.display_name or 'User').split() %}
-          {% set initials = name_parts[0][0] + (name_parts[-1][0] if name_parts|length > 1 else '') %}
-          <nav aria-label="Main Navigation">
-            <ul class="nav-links">
+    {% if is_authenticated %}
+      {% set name_parts = (current_user.display_name or 'Patient').split() %}
+      {% set initials = name_parts[0][0] + (name_parts[-1][0] if name_parts|length > 1 else '') %}
+
+      <div class="app-layout {% if is_sidebar_collapsed %}sidebar-collapsed{% endif %}">
+        <!-- Desktop Left Sidebar -->
+        <aside class="app-sidebar {% if is_sidebar_collapsed %}is-collapsed{% endif %}" id="appSidebar" aria-label="Main Navigation">
+          <div class="sidebar-header">
+            <a class="brand-lockup" href="{{ url_for('main.dashboard') }}" aria-label="Care Cliniq Home">
+              <div class="brand-emblem-badge" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="32" height="32" rx="9" fill="url(#cc-logo-grad-side)"/>
+                  <path d="M16 6.5C14.62 6.5 13.5 7.62 13.5 9V13.5H9C7.62 13.5 6.5 14.62 6.5 16C6.5 17.38 7.62 18.5 9 18.5H13.5V23C13.5 24.38 14.62 25.5 16 25.5C17.38 25.5 18.5 24.38 18.5 23V18.5H23C24.38 18.5 25.5 17.38 25.5 16C25.5 14.62 24.38 13.5 23 13.5H18.5V9C18.5 7.62 17.38 6.5 16 6.5Z" fill="#FFFFFF"/>
+                  <path d="M12 16H14L15.2 13.5L16.8 18.5L18 16H20" stroke="#0E482C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  <defs>
+                    <linearGradient id="cc-logo-grad-side" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                      <stop stop-color="#135234"/>
+                      <stop offset="1" stop-color="#229660"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+              <span class="brand-title">Care <span class="brand-title-accent">Cliniq</span></span>
+            </a>
+            <button type="button" class="sidebar-collapse-btn" id="sidebarCollapseBtn" aria-label="Toggle sidebar" title="Toggle sidebar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2"/>
+                <path d="M9 3v18"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Desktop Sidebar Navigation (7 Items in Exact Order) -->
+          <nav class="sidebar-nav" aria-label="Main workspace navigation">
+            <ul class="sidebar-nav-list">
               <li>
-                <a class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}" href="{{ url_for('main.dashboard') }}" {% if request.endpoint == 'main.dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
+                <a class="sidebar-nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}" href="{{ url_for('main.dashboard') }}" {% if request.endpoint == 'main.dashboard' %}aria-current="page"{% endif %} title="Home">
+                  <span class="nav-link-icon" aria-hidden="true">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                  </span>
+                  <span class="nav-link-text">Home</span>
+                </a>
               </li>
               <li>
-                <a class="nav-link {% if request.endpoint == 'main.appointment' %}active{% endif %}" href="{{ url_for('main.appointment') }}" {% if request.endpoint == 'main.appointment' %}aria-current="page"{% endif %}>Appointments</a>
+                <a class="sidebar-nav-link {% if request.endpoint == 'main.appointment' %}active{% endif %}" href="{{ url_for('main.appointment') }}" {% if request.endpoint == 'main.appointment' %}aria-current="page"{% endif %} title="Appointments">
+                  <span class="nav-link-icon" aria-hidden="true">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  </span>
+                  <span class="nav-link-text">Appointments</span>
+                </a>
               </li>
               <li>
-                <a class="nav-link {% if request.endpoint == 'main.history' %}active{% endif %}" href="{{ url_for('main.history') }}" {% if request.endpoint == 'main.history' %}aria-current="page"{% endif %}>Past Notes</a>
+                <a class="sidebar-nav-link {% if request.endpoint == 'main.medications' %}active{% endif %}" href="{{ url_for('main.medications') }}" {% if request.endpoint == 'main.medications' %}aria-current="page"{% endif %} title="Medications">
+                  <span class="nav-link-icon" aria-hidden="true">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+                  </span>
+                  <span class="nav-link-text">Medications</span>
+                </a>
               </li>
               <li>
-                <a class="nav-link {% if request.endpoint == 'main.hospital_locator' %}active{% endif %}" href="{{ url_for('main.hospital_locator') }}" {% if request.endpoint == 'main.hospital_locator' %}aria-current="page"{% endif %}>Find Hospital</a>
+                <a class="sidebar-nav-link {% if request.endpoint == 'main.hospital_locator' %}active{% endif %}" href="{{ url_for('main.hospital_locator') }}" {% if request.endpoint == 'main.hospital_locator' %}aria-current="page"{% endif %} title="Find Doctors">
+                  <span class="nav-link-icon" aria-hidden="true">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>
+                  </span>
+                  <span class="nav-link-text">Find Doctors</span>
+                </a>
+              </li>
+              <li>
+                <a class="sidebar-nav-link {% if request.endpoint == 'main.history' %}active{% endif %}" href="{{ url_for('main.history') }}" {% if request.endpoint == 'main.history' %}aria-current="page"{% endif %} title="Health Records">
+                  <span class="nav-link-icon" aria-hidden="true">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  </span>
+                  <span class="nav-link-text">Health Records</span>
+                </a>
+              </li>
+              <li>
+                <a class="sidebar-nav-link {% if request.endpoint == 'main.reminders' %}active{% endif %}" href="{{ url_for('main.reminders') }}" {% if request.endpoint == 'main.reminders' %}aria-current="page"{% endif %} title="Reminders">
+                  <span class="nav-link-icon" aria-hidden="true">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                  </span>
+                  <span class="nav-link-text">Reminders</span>
+                </a>
               </li>
             </ul>
-          </nav>
 
-          <div class="user-menu">
-            <div class="user-chip">
-              <span class="user-avatar" aria-hidden="true">{{ initials }}</span>
-              <span class="user-name">{{ current_user.display_name }}</span>
+            <!-- Sidebar Foot Section (Settings & Support at the bottom) -->
+            <div class="sidebar-footer">
+              <a class="sidebar-nav-link sidebar-footer-link {% if request.endpoint == 'main.settings' %}active{% endif %}" href="{{ url_for('main.settings') }}" {% if request.endpoint == 'main.settings' %}aria-current="page"{% endif %}>
+                <span class="nav-link-icon" aria-hidden="true">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </span>
+                <span class="nav-link-text">Settings</span>
+              </a>
+
+              <!-- Need Help Support Card -->
+              <div class="sidebar-help-card">
+                <div class="help-icon-circle">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+                </div>
+                <div class="help-content">
+                  <strong>Need help?</strong>
+                  <p>Our support team is here for you.</p>
+                  <a href="{{ url_for('main.hospital_locator') }}" class="help-link">Contact Support &rarr;</a>
+                </div>
+              </div>
             </div>
-            <a class="btn-signout" href="{{ url_for('auth.logout') }}">Sign out</a>
-            <button type="button" class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">Menu</button>
+          </nav>
+        </aside>
+
+        <!-- Main Workspace Area -->
+        <div class="app-canvas">
+          <!-- Desktop Header Bar -->
+          <header class="app-topbar-desktop">
+            <div class="topbar-actions">
+              <a href="{{ url_for('main.medications') }}" class="topbar-cart-btn" id="topbarCartBtn" onclick="if(window.openCartDrawer && window.location.pathname.includes('medications')){window.openCartDrawer();return false;}" title="Shopping Cart" aria-label="Shopping Cart">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                <span>Cart</span>
+                <span class="cart-nav-badge" id="globalCartBadge">2</span>
+              </a>
+
+              <div class="topbar-notification" title="Notifications">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                <span class="notification-badge-dot"></span>
+              </div>
+
+              <div class="topbar-user-pill">
+                <span class="user-avatar-circle" aria-hidden="true">{{ initials }}</span>
+                <span class="user-name-text">{{ current_user.display_name }}</span>
+                <a href="{{ url_for('auth.logout') }}" class="user-logout-link" title="Sign out">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                </a>
+              </div>
+            </div>
+          </header>
+
+          <!-- Mobile Top Bar -->
+          <header class="mobile-topbar" aria-label="Mobile Header">
+            <a class="brand-lockup-sm" href="{{ url_for('main.dashboard') }}" aria-label="Care Cliniq Home">
+              <div class="brand-emblem-badge-sm" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="32" height="32" rx="9" fill="url(#cc-logo-grad-mob)"/>
+                  <path d="M16 6.5C14.62 6.5 13.5 7.62 13.5 9V13.5H9C7.62 13.5 6.5 14.62 6.5 16C6.5 17.38 7.62 18.5 9 18.5H13.5V23C13.5 24.38 14.62 25.5 16 25.5C17.38 25.5 18.5 24.38 18.5 23V18.5H23C24.38 18.5 25.5 17.38 25.5 16C25.5 14.62 24.38 13.5 23 13.5H18.5V9C18.5 7.62 17.38 6.5 16 6.5Z" fill="#FFFFFF"/>
+                  <path d="M12 16H14L15.2 13.5L16.8 18.5L18 16H20" stroke="#0E482C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  <defs>
+                    <linearGradient id="cc-logo-grad-mob" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                      <stop stop-color="#135234"/>
+                      <stop offset="1" stop-color="#229660"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+              <span class="brand-title-sm">Care <span class="brand-title-accent">Cliniq</span></span>
+            </a>
+            <div class="mobile-topbar-actions">
+              <a href="{{ url_for('main.medications') }}" class="mobile-cart-btn" onclick="if(window.openCartDrawer && window.location.pathname.includes('medications')){window.openCartDrawer();return false;}" title="Cart">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                <span class="cart-nav-badge-sm" id="mobileCartBadge">2</span>
+              </a>
+              <span class="user-avatar-circle" aria-hidden="true">{{ initials }}</span>
+            </div>
+          </header>
+
+          <main class="app-main" id="main-content">
+            {% include "partials/flash.html" %}
+            {% block content %}{% endblock %}
+          </main>
+        </div>
+      </div>
+
+      <!-- Mobile Bottom Navigation (5 items) -->
+      <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+        <a class="bottom-nav-item {% if request.endpoint == 'main.dashboard' %}active{% endif %}" href="{{ url_for('main.dashboard') }}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Home</span>
+        </a>
+        <a class="bottom-nav-item {% if request.endpoint == 'main.appointment' %}active{% endif %}" href="{{ url_for('main.appointment') }}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          <span>Appointments</span>
+        </a>
+        <a class="bottom-nav-item {% if request.endpoint == 'main.hospital_locator' %}active{% endif %}" href="{{ url_for('main.hospital_locator') }}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>
+          <span>Find Care</span>
+        </a>
+        <a class="bottom-nav-item {% if request.endpoint == 'main.history' %}active{% endif %}" href="{{ url_for('main.history') }}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Records</span>
+        </a>
+        <button type="button" class="bottom-nav-item" id="mobileMoreTrigger" aria-label="Open more menu" aria-haspopup="dialog" aria-expanded="false">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+          <span>More</span>
+        </button>
+      </nav>
+
+      <!-- Mobile "More" Drawer / Modal -->
+      <div class="mobile-drawer-backdrop" id="mobileDrawerBackdrop" hidden></div>
+      <div class="mobile-drawer" id="mobileDrawer" role="dialog" aria-modal="true" aria-label="Additional Navigation" hidden>
+        <div class="mobile-drawer-header">
+          <div class="user-chip">
+            <span class="user-avatar-circle" aria-hidden="true">{{ initials }}</span>
+            <div class="user-info">
+              <span class="user-name">{{ current_user.display_name }}</span>
+              <span class="user-role">Patient Account</span>
+            </div>
           </div>
-        {% else %}
-          <nav aria-label="Public Navigation">
+          <button type="button" class="mobile-drawer-close" id="mobileDrawerClose" aria-label="Close menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <ul class="mobile-drawer-list">
+          <li>
+            <a class="mobile-drawer-link {% if request.endpoint == 'main.medications' %}active{% endif %}" href="{{ url_for('main.medications') }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+              <span>Medications</span>
+            </a>
+          </li>
+          <li>
+            <a class="mobile-drawer-link {% if request.endpoint == 'main.reminders' %}active{% endif %}" href="{{ url_for('main.reminders') }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+              <span>Reminders</span>
+            </a>
+          </li>
+          <li>
+            <a class="mobile-drawer-link {% if request.endpoint == 'main.settings' %}active{% endif %}" href="{{ url_for('main.settings') }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span>Settings &amp; Emergency Profile</span>
+            </a>
+          </li>
+          <li class="mobile-drawer-divider"></li>
+          <li>
+            <a class="mobile-drawer-link danger-text" href="{{ url_for('auth.logout') }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <span>Sign out</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+    {% else %}
+      <!-- Public Site Header -->
+      <header class="public-header">
+        <div class="site-container public-nav-shell">
+          <a class="brand-lockup" href="{{ url_for('main.home') }}" aria-label="Care Cliniq Home">
+            <div class="brand-emblem-badge" aria-hidden="true">
+              <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="32" height="32" rx="9" fill="url(#cc-logo-grad-pub)"/>
+                <path d="M16 6.5C14.62 6.5 13.5 7.62 13.5 9V13.5H9C7.62 13.5 6.5 14.62 6.5 16C6.5 17.38 7.62 18.5 9 18.5H13.5V23C13.5 24.38 14.62 25.5 16 25.5C17.38 25.5 18.5 24.38 18.5 23V18.5H23C24.38 18.5 25.5 17.38 25.5 16C25.5 14.62 24.38 13.5 23 13.5H18.5V9C18.5 7.62 17.38 6.5 16 6.5Z" fill="#FFFFFF"/>
+                <path d="M12 16H14L15.2 13.5L16.8 18.5L18 16H20" stroke="#0E482C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <defs>
+                  <linearGradient id="cc-logo-grad-pub" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#135234"/>
+                    <stop offset="1" stop-color="#229660"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <span class="brand-title">Care <span class="brand-title-accent">Cliniq</span></span>
+          </a>
+
+          <nav aria-label="Public Navigation" class="public-nav">
             <ul class="nav-links">
               <li>
                 <a class="nav-link {% if request.endpoint == 'main.home' %}active{% endif %}" href="{{ url_for('main.home') }}">Home</a>
+              </li>
+              <li>
+                <a class="nav-link {% if request.endpoint == 'main.hospital_locator' %}active{% endif %}" href="{{ url_for('main.hospital_locator') }}">Find Hospitals</a>
+              </li>
+              <li>
+                <a class="nav-link {% if request.endpoint == 'main.medications' %}active{% endif %}" href="{{ url_for('main.medications') }}">Medications</a>
               </li>
               <li>
                 <a class="nav-link {% if request.endpoint == 'auth.login' %}active{% endif %}" href="{{ url_for('auth.login') }}">Sign in</a>
               </li>
             </ul>
           </nav>
-          <div class="user-menu">
+
+          <div class="public-header-actions">
             <a class="button primary small" href="{{ url_for('auth.register') }}">Create account</a>
           </div>
-        {% endif %}
-      </div>
-    </header>
+        </div>
+      </header>
 
-    <main class="site-container main-content" id="main-content">
-      {% include "partials/flash.html" %}
-      {% block content %}{% endblock %}
-    </main>
+      <main class="site-container public-main" id="main-content">
+        {% include "partials/flash.html" %}
+        {{ self.content() }}
+      </main>
 
-    <footer class="site-footer">
-      <div class="site-container footer-inner">
-        <p class="footer-emergency"><strong>Emergency:</strong> If you are experiencing chest pain, severe shortness of breath, sudden weakness, or heavy bleeding, call <a href="tel:112">112</a> immediately.</p>
-        <p>CareCompass is a personal health journal and clinical visit companion. It does not provide formal medical diagnoses or emergency triage.</p>
-        <p class="muted-text">&copy; 2026 CareCompass. Confidential clinical journal • Protected patient session.</p>
-      </div>
-    </footer>
+      <footer class="public-footer">
+        <div class="site-container footer-inner">
+          <div class="footer-public-links" style="display: flex; gap: 20px; justify-content: center; margin-bottom: 14px; flex-wrap: wrap; font-size: 13.5px; font-weight: 500;">
+            <a href="{{ url_for('main.home') }}" style="color: #63737F; text-decoration: none;">Home</a>
+            <a href="{{ url_for('main.hospital_locator') }}" style="color: #63737F; text-decoration: none;">Find Hospitals &amp; Clinics</a>
+            <a href="{{ url_for('main.medications') }}" style="color: #63737F; text-decoration: none;">Medications Catalog</a>
+            <a href="{{ url_for('auth.login') }}" style="color: #63737F; text-decoration: none;">Patient Sign In</a>
+            <a href="{{ url_for('auth.register') }}" style="color: #63737F; text-decoration: none;">Create Free Account</a>
+          </div>
+          <p class="footer-emergency"><strong>Urgent Care:</strong> In case of an emergency, please call your local emergency number <a href="tel:112">112</a> or visit the nearest hospital.</p>
+          <p class="footer-disclaimer">Care Cliniq helps you organize your symptoms and prepare for doctor visits. It is not a substitute for professional advice from a doctor.</p>
+          <p class="footer-confidential">&copy; 2026 Care Cliniq. All rights reserved.</p>
+        </div>
+      </footer>
+    {% endif %}
 
     <script src="{{ url_for('static', filename='js/ui.js') }}"></script>
     {% block scripts %}{% endblock %}

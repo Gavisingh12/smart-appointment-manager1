@@ -1,22 +1,48 @@
 {% extends "base.html" %}
 
-{% block title %}Consultation Result | {{ app_name }}{% endblock %}
-{% block meta_description %}Structured consultation summary with likely causes, investigations, treatment notes, medication guidance, and precautions.{% endblock %}
-{% block page_heading %}Consultation result{% endblock %}
+{% block title %}Clinical Support Summary &bull; Care Cliniq{% endblock %}
+{% block meta_description %}Comprehensive clinical consultation summary with likely causes, recommended investigations, treatment direction, medication guidance, and visit preparation.{% endblock %}
 
 {% block content %}
-  <section class="panel premium-surface">
-    <div class="panel-head">
-      <div>
-        <span class="eyebrow">Consultation result</span>
-        <h1>Clinical support summary</h1>
+<div class="result-page-container">
+  <!-- Top Hero Header Card -->
+  <header class="result-hero-card">
+    <div class="result-hero-content">
+      <div class="clinical-eyebrow-pill">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        <span>Clinical Consultation Briefing</span>
       </div>
-      <span class="mini-status">Cleaned response</span>
+      <h1 class="result-headline">Clinical Support &amp; Diagnosis Summary</h1>
+      <p class="result-subhead">
+        Synthesized from your reported symptoms and clinical intake context. Reviewed against Care Cliniq clinical reference database.
+      </p>
     </div>
-    {% include "consultations/result_partial.html" %}
-    <div class="button-row top-gap">
-      <a class="button primary" href="{{ url_for('main.dashboard') }}">Back to dashboard</a>
-      <a class="button ghost" href="{{ url_for('main.history') }}">Open consultation history</a>
+    <div class="result-hero-badge-wrap">
+      <span class="briefing-status-pill">
+        <span class="status-pulse-dot"></span>
+        <span>Physician-Ready Review</span>
+      </span>
     </div>
-  </section>
+  </header>
+
+  <!-- Structured Consultation Briefing Content -->
+  {% include "consultations/result_partial.html" %}
+
+  <!-- Bottom Navigation Row -->
+  <div class="result-bottom-nav">
+    <a class="button secondary" href="{{ url_for('main.dashboard') }}">
+      &larr; Return to Dashboard
+    </a>
+    <div class="result-nav-actions">
+      <a class="button ghost" href="{{ url_for('main.history') }}">
+        Open Consultation History
+      </a>
+      <a class="button primary" href="{{ url_for('main.appointment') }}">
+        Book Doctor Visit &rarr;
+      </a>
+    </div>
+  </div>
+</div>
 {% endblock %}

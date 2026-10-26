@@ -1,1 +1,1 @@
-# Route package for CareCompass AI
+# Route package for Care Cliniq

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Reminders | Care Cliniq{% endblock %}
+{% block meta_description %}Upcoming clinical visit reminders and medication schedule notifications.{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <div class="page-header-row">
+      <div>
+        <span class="eyebrow">Notifications &amp; Schedule</span>
+        <h1 class="page-title">Reminders</h1>
+        <p class="page-subtitle">Never miss an upcoming doctor visit or a daily medicine dose.</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid-12">
+    <!-- Doctor Visit Reminders -->
+    <div class="col-6">
+      <section class="card" aria-labelledby="appt-reminders-heading">
+        <div class="panel-head">
+          <div class="panel-head-icon-row">
+            <span class="icon-indicator" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            </span>
+            <h2 id="appt-reminders-heading" class="card-title">Doctor Visit Reminders</h2>
+          </div>
+          <span class="status-badge pending">{{ appointments|length }} Scheduled</span>
+        </div>
+
+        {% if appointments %}
+          <div class="reminder-timeline">
+            {% for appt in appointments %}
+              <div class="reminder-card">
+                <div class="reminder-badge-time">
+                  <span class="reminder-day">{{ appt.date.strftime('%d %b') }}</span>
+                  <span class="reminder-hour">{{ appt.time }}</span>
+                </div>
+                <div class="reminder-content">
+                  <strong class="reminder-title">{{ appt.doctor }}</strong>
+                  <span class="reminder-meta">{{ appt.date.strftime('%A') }} • Consultation</span>
+                  {% if appt.notes %}
+                    <p class="reminder-notes">{{ appt.notes }}</p>
+                  {% endif %}
+                </div>
+                <div class="reminder-action">
+                  <a href="{{ url_for('main.download_appointment_ics', appointment_id=appt.id) }}" class="button ghost small" title="Add to calendar">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    .ics
+                  </a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-state-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+            <h3 class="empty-state-title">No upcoming visit reminders</h3>
+            <p class="empty-state-copy">When you schedule an appointment with your doctor, reminders will appear here.</p>
+            <a class="button primary small" href="{{ url_for('main.appointment') }}" style="margin-top: 12px;">Schedule an appointment</a>
+          </div>
+        {% endif %}
+      </section>
+    </div>
+
+    <!-- Daily Regimen Reminders -->
+    <div class="col-6">
+      <section class="card" aria-labelledby="med-reminders-heading">
+        <div class="panel-head">
+          <div class="panel-head-icon-row">
+            <span class="icon-indicator" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+            </span>
+            <h2 id="med-reminders-heading" class="card-title">Medication Schedule</h2>
+          </div>
+          <span class="status-badge live">{{ medications|length }} Active</span>
+        </div>
+
+        {% if medications %}
+          <div class="reminder-timeline">
+            {% for med in medications %}
+              <div class="reminder-card">
+                <div class="reminder-badge-time">
+                  <span class="reminder-day">Daily</span>
+                  <span class="reminder-hour">{{ med.frequency or 'As directed' }}</span>
+                </div>
+                <div class="reminder-content">
+                  <strong class="reminder-title">{{ med.name }}</strong>
+                  {% if med.dosage %}
+                    <span class="reminder-meta">{{ med.dosage }}</span>
+                  {% endif %}
+                  {% if med.instructions %}
+                    <p class="reminder-notes">{{ med.instructions }}</p>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-state-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+            </div>
+            <h3 class="empty-state-title">No medicine reminders</h3>
+            <p class="empty-state-copy">Add medicines to your schedule to get daily reminders on time.</p>
+            <a class="button primary small" href="{{ url_for('main.medications') }}" style="margin-top: 12px;">Add medicine</a>
+          </div>
+        {% endif %}
+      </section>
+    </div>
+  </div>
+{% endblock %}

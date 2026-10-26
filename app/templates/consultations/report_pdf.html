@@ -12,37 +12,40 @@
     </style>
   </head>
   <body>
-    <h1>CareCompass AI Consultation Report</h1>
+    <h1>Care Cliniq Doctor Visit Summary</h1>
     <p><strong>Date:</strong> {{ consultation.timestamp.strftime('%d %b %Y, %I:%M %p') }}</p>
     <p><strong>Patient:</strong> {{ patient_name }}</p>
     <p><strong>Symptoms:</strong> {{ consultation.symptoms }}</p>
 
     <section>
-      <h3>Presenting Complaint</h3>
+      <h3>What You Reported</h3>
       <p>{{ analysis_text(analysis.presenting_complaint) }}</p>
     </section>
     <section>
-      <h3>Differential Diagnoses</h3>
+      <h3>Possible Conditions</h3>
       <ul>{% for item in analysis_points(analysis.differential_diagnoses) %}<li>{{ item }}</li>{% endfor %}</ul>
     </section>
     <section>
-      <h3>Investigations</h3>
+      <h3>Recommended Tests &amp; Checks</h3>
       <ul>{% for item in analysis_points(analysis.investigations) %}<li>{{ item }}</li>{% endfor %}</ul>
     </section>
     <section>
-      <h3>Treatment</h3>
+      <h3>Care &amp; Recovery Advice</h3>
       <ul>{% for item in analysis_points(analysis.treatment) %}<li>{{ item }}</li>{% endfor %}</ul>
     </section>
     <section>
-      <h3>Medications</h3>
+      <h3>Medicines Often Prescribed</h3>
       <ul>{% for item in analysis_points(analysis.medications) %}<li>{{ item }}</li>{% endfor %}</ul>
+      <p style="font-size: 11px; line-height: 1.45; color: #92400e; background: #fffbeb; padding: 8px 12px; border-left: 3px solid #f59e0b; border-radius: 6px; margin: 8px 0 0 0;">
+        <strong>Safety &amp; Legal Notice:</strong> The medicines listed above are for clinical education and reference only and do NOT constitute an electronic prescription (Rx). Do not self-medicate. Always consult a registered medical practitioner (MBBS/MD) before taking any medication. (दवा शुरू करने से पहले योग्य डॉक्टर की सलाह अवश्य लें।)
+      </p>
     </section>
     <section>
-      <h3>Precautions</h3>
+      <h3>Precautions &amp; Warnings</h3>
       <ul>{% for item in analysis_points(analysis.precautions) %}<li>{{ item }}</li>{% endfor %}</ul>
     </section>
     <div class="notice">
-      <strong>Disclaimer</strong>
+      <strong>Important Medical Note</strong>
       <p>{{ analysis_text(analysis.disclaimer) }}</p>
     </div>
   </body>

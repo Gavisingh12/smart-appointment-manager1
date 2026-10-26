@@ -22,10 +22,9 @@ document.addEventListener("DOMContentLoaded", () => {
         weekday: "long",
         day: "numeric",
         month: "long",
-        year: "numeric",
-        timeZone: "Asia/Kolkata"
+        year: "numeric"
       };
-      dateEl.textContent = new Intl.DateTimeFormat("en-IN", options).format(new Date());
+      dateEl.textContent = new Intl.DateTimeFormat(undefined, options).format(new Date());
     } catch (e) {
       dateEl.textContent = new Date().toLocaleDateString(undefined, {
         weekday: "long",
@@ -43,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const updateChipStates = () => {
       const text = (symptomInput.value || "").toLowerCase();
       chips.forEach((chip) => {
-        const val = (chip.dataset.symptom || chip.textContent).trim().toLowerCase();
+        const val = (chip.dataset.symptom || chip.textContent).replace(/^\+\s*/, "").trim().toLowerCase();
         const isPresent = text.includes(val);
         chip.setAttribute("aria-pressed", isPresent ? "true" : "false");
       });
@@ -51,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     chips.forEach((chip) => {
       chip.addEventListener("click", () => {
-        const symptom = chip.dataset.symptom || chip.textContent.trim();
+        const symptom = (chip.dataset.symptom || chip.textContent).replace(/^\+\s*/, "").trim();
         const currentVal = symptomInput.value.trim();
         const isPressed = chip.getAttribute("aria-pressed") === "true";
 
@@ -70,6 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
           chip.setAttribute("aria-pressed", "true");
         }
         symptomInput.focus();
+        updateWordCount();
       });
     });
 
@@ -89,17 +89,85 @@ document.addEventListener("DOMContentLoaded", () => {
     updateWordCount();
   }
 
-  // 3. Mobile Navigation Menu Toggle
-  const navToggle = document.querySelector(".mobile-nav-toggle");
-  const navLinks = document.querySelector(".nav-links");
-  if (navToggle && navLinks) {
-    navToggle.addEventListener("click", () => {
-      const isOpen = navLinks.classList.toggle("is-open");
-      navToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  // 3. "Check Symptoms" Prominent Sidebar Action Handler
+  const checkSymptomsBtn = document.getElementById("sidebarCheckSymptomsBtn");
+  if (checkSymptomsBtn && symptomInput) {
+    checkSymptomsBtn.addEventListener("click", (e) => {
+      if (window.location.pathname.includes("/dashboard") || window.location.pathname === "/") {
+        e.preventDefault();
+        symptomInput.scrollIntoView({ behavior: "smooth", block: "center" });
+        setTimeout(() => symptomInput.focus(), 300);
+      }
     });
   }
 
-  // 4. Appointments Segmented Tab Filter (Upcoming vs All)
+  // 3b. Common Health Concerns Card Clicks
+  const concernCards = document.querySelectorAll(".concern-card[data-symptom]");
+  concernCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      const sym = card.dataset.symptom;
+      if (symptomInput && sym) {
+        symptomInput.value = sym;
+        symptomInput.scrollIntoView({ behavior: "smooth", block: "center" });
+        setTimeout(() => symptomInput.focus(), 250);
+      }
+    });
+  });
+
+  const startConsultationBannerBtn = document.getElementById("startConsultationBannerBtn");
+  if (startConsultationBannerBtn && symptomInput) {
+    startConsultationBannerBtn.addEventListener("click", () => {
+      symptomInput.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(() => symptomInput.focus(), 250);
+    });
+  }
+
+
+  // 4. Mobile Bottom Nav "More" Sheet Modal
+  const moreTrigger = document.getElementById("mobileMoreTrigger");
+  const drawer = document.getElementById("mobileDrawer");
+  const drawerBackdrop = document.getElementById("mobileDrawerBackdrop");
+  const drawerClose = document.getElementById("mobileDrawerClose");
+
+  if (moreTrigger && drawer && drawerBackdrop) {
+    const openDrawer = () => {
+      drawer.hidden = false;
+      drawerBackdrop.hidden = false;
+      drawer.classList.add("is-open");
+      drawerBackdrop.classList.add("is-open");
+      moreTrigger.setAttribute("aria-expanded", "true");
+      document.body.style.overflow = "hidden";
+    };
+
+    const closeDrawer = () => {
+      drawer.classList.remove("is-open");
+      drawerBackdrop.classList.remove("is-open");
+      setTimeout(() => {
+        drawer.hidden = true;
+        drawerBackdrop.hidden = true;
+      }, 200);
+      moreTrigger.setAttribute("aria-expanded", "false");
+      document.body.style.overflow = "";
+    };
+
+    moreTrigger.addEventListener("click", () => {
+      if (drawer.classList.contains("is-open")) {
+        closeDrawer();
+      } else {
+        openDrawer();
+      }
+    });
+
+    if (drawerClose) drawerClose.addEventListener("click", closeDrawer);
+    drawerBackdrop.addEventListener("click", closeDrawer);
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && drawer.classList.contains("is-open")) {
+        closeDrawer();
+      }
+    });
+  }
+
+  // 5. Appointments Segmented Tab Filter (Upcoming vs All)
   const tabUpcoming = document.getElementById("tab-upcoming");
   const tabAll = document.getElementById("tab-all");
   const appointmentsContainer = document.getElementById("appointmentsContainer");
@@ -129,11 +197,10 @@ document.addEventListener("DOMContentLoaded", () => {
       filterAppointments(false);
     });
 
-    // Default to upcoming view
     filterAppointments(true);
   }
 
-  // 5. Accessible Remove/Delete Dialog Modal
+  // 6. Accessible Remove/Delete Dialog Modal
   const dialog = document.getElementById("deleteAppointmentDialog");
   const cancelBtn = document.getElementById("cancelDialogBtn");
   const confirmBtn = document.getElementById("confirmDeleteBtn");
@@ -155,7 +222,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (typeof dialog.showModal === "function") {
           dialog.showModal();
         } else {
-          // Fallback if dialog tag not supported
           if (confirm(`Remove appointment with ${doctorName} on ${appDate}?`)) {
             if (formToSubmit) formToSubmit.submit();
           }
@@ -178,4 +244,51 @@ document.addEventListener("DOMContentLoaded", () => {
       formToSubmit = null;
     });
   }
+
+  // 7. Desktop Sidebar Collapse & Hover-to-Expand Toggle
+  const appSidebar = document.getElementById("appSidebar");
+  const appLayout = document.querySelector(".app-layout");
+  const sidebarCollapseBtn = document.getElementById("sidebarCollapseBtn");
+
+  if (appSidebar && appLayout) {
+    const applySidebarState = (collapsed) => {
+      appSidebar.classList.toggle("is-collapsed", collapsed);
+      appLayout.classList.toggle("sidebar-collapsed", collapsed);
+      const label = collapsed ? "Expand sidebar" : "Collapse sidebar";
+      if (sidebarCollapseBtn) {
+        sidebarCollapseBtn.setAttribute("title", label);
+        sidebarCollapseBtn.setAttribute("aria-label", label);
+      }
+      try {
+        localStorage.setItem("cc_sidebar_collapsed", collapsed ? "true" : "false");
+        document.cookie = "cc_sidebar_collapsed=" + (collapsed ? "1" : "0") + "; path=/; max-age=31536000; SameSite=Lax";
+      } catch (e) {}
+    };
+
+    // Keep state synced with cookie / localStorage without flash
+    try {
+      const match = document.cookie.match(/(?:^|; )cc_sidebar_collapsed=([^;]*)/);
+      const isCol = match ? (match[1] === "1") : (localStorage.getItem("cc_sidebar_collapsed") === "true");
+      if (isCol !== appSidebar.classList.contains("is-collapsed")) {
+        applySidebarState(isCol);
+      }
+    } catch (e) {}
+
+    const toggleSidebar = () => {
+      const isCurrentlyCollapsed = appSidebar.classList.contains("is-collapsed");
+      applySidebarState(!isCurrentlyCollapsed);
+    };
+
+    if (sidebarCollapseBtn) {
+      sidebarCollapseBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleSidebar();
+      });
+    }
+  }
+
+  // Remove preload class after first render to ensure silky smooth transitions
+  requestAnimationFrame(() => {
+    document.body.classList.remove("preload");
+  });
 });

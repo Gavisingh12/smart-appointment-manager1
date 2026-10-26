@@ -1,137 +1,248 @@
 {% extends "base.html" %}
 
-{% block title %}Past Notes | CareCompass{% endblock %}
-{% block meta_description %}Review your consultation notes, symptom timeline, and export clinical summaries.{% endblock %}
+{% block title %}Past Notes & Health Records | Care Cliniq{% endblock %}
+{% block meta_description %}Review your consultation notes, symptom timeline, and export clinical briefings for doctor visits.{% endblock %}
 
 {% block head %}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
 {% block content %}
-  <header class="page-header">
-    <div style="display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-      <div>
-        <h1>Past Consultation Notes</h1>
-        <p class="page-subtitle">Track symptom progression over time and export clinical briefings for doctor visits.</p>
-      </div>
-      <div>
-        <a class="button primary small" href="{{ url_for('main.dashboard') }}">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          + Log New Symptoms
-        </a>
-      </div>
+  <header class="page-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 22px;">
+    <div>
+      <h1 style="margin: 0 0 4px 0; font-size: 24px; font-weight: 700; color: #151D22;">Your Health Records &amp; Past Notes</h1>
+      <p style="margin: 0; font-size: 13.5px; color: #475569;">Check your past notes, view your symptom timeline, and download clean summaries for doctor visits.</p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <a class="button secondary small" href="{{ url_for('main.dashboard') }}" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <span>Check New Symptoms</span>
+      </a>
+
+      <!-- View Records Toggle Button (Matching My Appointments) -->
+      <button type="button" class="my-appointments-header-btn" id="myRecordsToggleBtn" aria-controls="viewSectionRecords" title="View past consultation records">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        <span id="myRecordsBtnText">Past Notes</span>
+        <span class="my-appointments-count-badge" id="myRecordsCountBadge">{{ consultations|length }}</span>
+      </button>
     </div>
   </header>
 
-  <!-- 2-Column Balanced Overview (Replaces the Barren Stretched Chart) -->
-  <div class="history-hero-grid">
-    <!-- Left 7 Columns: Compact Trend Chart -->
-    <section class="card" aria-labelledby="activity-heading" style="margin: 0;">
-      <h2 id="activity-heading" class="card-title">Symptom Logging Frequency (30-Day Trend)</h2>
-      {% if chart_labels %}
-        <div class="chart-wrapper">
-          <canvas id="historyChart" aria-label="Line chart showing consultation activity over dates" role="img"></canvas>
+  <!-- =========================================================================
+       SECTION 1: CLEAN HEALTH RECORDS OVERVIEW (Active By Default)
+       ========================================================================= -->
+  <section id="viewSectionOverview" role="tabpanel" aria-labelledby="overview-heading">
+    <!-- 2-Column Balanced Overview Grid -->
+    <div class="history-hero-grid">
+      <!-- Left: Trend Chart Card -->
+      <section class="card history-chart-card" aria-labelledby="activity-heading">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <h2 id="activity-heading" class="card-title" style="margin: 0; font-size: 16px; font-weight: 700; color: #151D22;">
+            Symptom Timeline (Last 30 Days)
+          </h2>
+          <span class="doctor-specialty-badge" style="background: #EDF7F1; color: #135234;">Active Timeline</span>
         </div>
-      {% else %}
-        <div class="empty-state" style="padding: 24px;">
-          <p>No activity trends recorded yet.</p>
+        {% if chart_labels %}
+          <div class="chart-wrapper">
+            <canvas id="historyChart" aria-label="Line chart showing consultation activity over dates" role="img"></canvas>
+          </div>
+        {% else %}
+          <div class="empty-state" style="padding: 32px 16px;">
+            <p class="muted-text">No activity trends recorded yet.</p>
+          </div>
+        {% endif %}
+      </section>
+
+      <!-- Right: Clinical Records Summary Card -->
+      <section class="card history-summary-card" aria-labelledby="summary-stats-heading">
+        <div>
+          <h2 id="summary-stats-heading" class="card-title" style="margin: 0 0 16px 0; font-size: 16px; font-weight: 700; color: #151D22;">
+            Your Records Summary
+          </h2>
+          <div class="history-stats-list">
+            <div class="history-stat-row">
+              <span class="stat-row-label">Total Saved Records</span>
+              <span class="stat-row-badge-count">{{ total_consultations }}</span>
+            </div>
+            <div class="history-stat-row">
+              <span class="stat-row-label">Latest Entry</span>
+              <strong class="stat-row-val">{{ most_recent.strftime('%d %b %Y') if most_recent else 'None' }}</strong>
+            </div>
+            <div class="history-stat-row" style="border-bottom: none;">
+              <span class="stat-row-label">Clinical PDF Export</span>
+              <span class="status-badge confirmed">Ready for Doctor</span>
+            </div>
+          </div>
         </div>
-      {% endif %}
-    </section>
 
-    <!-- Right 5 Columns: Clinical Records Summary Card -->
-    <section class="card" aria-labelledby="summary-stats-heading" style="margin: 0; justify-content: space-between;">
-      <div>
-        <h2 id="summary-stats-heading" class="card-title">Health Records Archive</h2>
-        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px;">
-          <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--border-decor); padding-bottom: 8px;">
-            <span class="muted-text">Total Saved Records</span>
-            <strong style="font-size: 18px; color: var(--brand);">{{ total_consultations }}</strong>
-          </div>
-          <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--border-decor); padding-bottom: 8px;">
-            <span class="muted-text">Latest Entry</span>
-            <strong style="font-size: 14px; color: var(--text);">{{ most_recent.strftime('%d %b %Y') if most_recent else 'None' }}</strong>
-          </div>
-          <div style="display: flex; justify-content: space-between; align-items: baseline;">
-            <span class="muted-text">Clinical PDF Export</span>
-            <span class="status-badge confirmed">Ready for Doctor</span>
-          </div>
+        <div class="history-archive-callout">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#135234" stroke-width="2" class="callout-icon" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span><strong>Clinical Archive:</strong> Export full clinical summaries with symptom progression and questions before visiting your physician or specialist.</span>
         </div>
-      </div>
-
-      <div style="margin-top: 18px; background-color: var(--surface-alt); border: 1px solid var(--border-decor); border-radius: var(--radius-sm); padding: 12px;">
-        <span style="font-size: 12.5px; color: var(--text-muted); display: block;">
-          📄 <strong>Clinical Archive:</strong> Export full clinical summaries with symptom progression and questions before visiting your physician or specialist.
-        </span>
-      </div>
-    </section>
-  </div>
-
-  <!-- Timeline Cards Section -->
-  <section class="card" aria-labelledby="history-records-heading">
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
-      <h2 id="history-records-heading" style="margin: 0;">Consultation Records Timeline</h2>
-      {% if consultations %}
-        <span class="muted-text">{{ consultations|length }} record{% if consultations|length != 1 %}s{% endif %} archived</span>
-      {% endif %}
+      </section>
     </div>
 
+    <!-- Latest Recent Entry Snapshot Banner -->
     {% if consultations %}
-      <div class="timeline-list">
-        {% for consultation in consultations %}
-          <article class="timeline-card">
-            <header class="timeline-header">
-              <div class="timeline-date">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: -2px; margin-right: 6px;" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                {{ consultation.timestamp.strftime('%A, %d %B %Y at %I:%M %p') }}
+      {% set latest = consultations[0] %}
+      <div class="card" style="padding: 22px; margin: 0; background: #FFFFFF; border: 1.5px solid #E2E8F0; border-radius: 14px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid #F1F5F9; padding-bottom: 14px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: #EDF7F1; color: #135234; font-size: 16px;">⏱</span>
+            <div>
+              <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #151D22;">Latest Clinical Consultation Note</h3>
+              <span style="font-size: 12.5px; color: #64748B;">Recorded on {{ latest.timestamp.strftime('%A, %d %B %Y at %I:%M %p') }}</span>
+            </div>
+          </div>
+          <button type="button" class="button primary small" id="openRecordsFromOverviewBtn" style="display: inline-flex; align-items: center; gap: 6px;">
+            <span>View All {{ consultations|length }} Records Timeline &rarr;</span>
+          </button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+          <!-- Latest Symptoms -->
+          <div class="record-section-box observations-box" style="margin: 0;">
+            <div class="record-section-label">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              <span>Latest Patient Symptoms</span>
+            </div>
+            <p class="record-section-text" style="font-weight: 500;">{{ latest.symptoms }}</p>
+          </div>
+
+          <!-- Latest Outline -->
+          {% if latest.summary %}
+            <div class="record-section-box summary-box" style="margin: 0;">
+              <div class="record-section-label">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#135234" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <span>Latest Briefing Outline</span>
               </div>
-              <div class="timeline-actions">
-                <a class="button ghost small" href="{{ url_for('main.download_pdf', consultation_id=consultation.id) }}">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                  Export PDF
+              <p class="record-section-text summary-text">{{ latest.summary }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% else %}
+      <div class="card" style="text-align: center; padding: 40px 20px;">
+        <div style="width: 52px; height: 52px; border-radius: 50%; background: #EDF7F1; color: #135234; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px auto;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+        </div>
+        <h3 style="margin: 0 0 6px 0; font-size: 16px; font-weight: 700; color: #151D22;">No Consultation Records On File Yet</h3>
+        <p style="margin: 0 0 16px 0; font-size: 13.5px; color: #64748B; max-width: 480px; margin-left: auto; margin-right: auto;">
+          Logging your symptoms creates an organized clinical summary that helps doctors quickly understand your medical history.
+        </p>
+        <a class="button primary small" href="{{ url_for('main.dashboard') }}" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span>Log New Symptoms</span>
+        </a>
+      </div>
+    {% endif %}
+  </section>
+
+  <!-- =========================================================================
+       SECTION 2: PAST CONSULTATION RECORDS TIMELINE (Toggleable Section)
+       ========================================================================= -->
+  <section id="viewSectionRecords" role="tabpanel" aria-labelledby="records-heading" style="display: none;">
+    <div class="card" aria-labelledby="history-records-heading" style="padding: 24px; margin: 0;">
+      <!-- Section Header with Back Button -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid #E2E8F0; padding-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button type="button" class="button secondary small" id="backToOverviewBtn" style="display: inline-flex; align-items: center; gap: 5px;">
+            <span>&larr; Back to Overview</span>
+          </button>
+          <h2 id="history-records-heading" style="margin: 0; font-size: 18px; font-weight: 700; color: #151D22;">
+            Consultation Records Timeline
+          </h2>
+          {% if consultations %}
+            <span class="my-appointments-count-badge" style="position: static; font-size: 12px;">{{ consultations|length }}</span>
+          {% endif %}
+        </div>
+        {% if consultations %}
+          <span class="muted-text" style="font-size: 13px;">{{ consultations|length }} record{% if consultations|length != 1 %}s{% endif %} archived</span>
+        {% endif %}
+      </div>
+
+      {% if consultations %}
+        <div class="record-list" id="consultationRecordsList">
+          {% for consultation in consultations %}
+            <article class="record-card">
+              <div class="record-card-main">
+                <!-- Left Date Block (Identical to My Appointments) -->
+                <div class="date-block" aria-hidden="true">
+                  <span class="date-block-month">{{ consultation.timestamp.strftime('%b') }}</span>
+                  <span class="date-block-day">{{ consultation.timestamp.strftime('%d') }}</span>
+                </div>
+
+                <!-- Center Record Details -->
+                <div class="record-details">
+                  <!-- Top Row: Title, Badges, Ref ID -->
+                  <div class="record-meta-top">
+                    <div class="record-title-group">
+                      <h3 class="record-title">Consultation Note #{{ consultation.id }}</h3>
+                      <span class="doctor-specialty-badge">Clinical Assessment</span>
+                      <span class="status-badge confirmed">Ready for Doctor</span>
+                    </div>
+                    <span class="record-ref-id">REF-REC-{{ consultation.id }}</span>
+                  </div>
+
+                  <!-- Timestamp Row -->
+                  <div class="record-timestamp">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <span>{{ consultation.timestamp.strftime('%A, %d %B %Y at %I:%M %p') }}</span>
+                  </div>
+
+                  <!-- Patient Observations Box -->
+                  <div class="record-section-box observations-box">
+                    <div class="record-section-label">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                      <span>Patient Recorded Observations</span>
+                    </div>
+                    <p class="record-section-text">{{ consultation.symptoms }}</p>
+                  </div>
+
+                  <!-- Physician Briefing Outline Box -->
+                  {% if consultation.summary %}
+                    <div class="record-section-box summary-box">
+                      <div class="record-section-label">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#135234" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        <span>Physician Briefing Outline</span>
+                      </div>
+                      <p class="record-section-text summary-text">{{ consultation.summary }}</p>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Card Actions -->
+              <div class="record-card-actions">
+                <a href="{{ url_for('main.download_pdf', consultation_id=consultation.id) }}" class="button secondary small" title="Download Official Medical Summary PDF" style="display: inline-flex; align-items: center; gap: 5px; text-decoration: none;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <span>Export PDF</span>
                 </a>
-                <button type="button" class="button ghost small" onclick="window.print();" title="Print this record">
-                  Print
+
+                <button type="button" class="button secondary small" onclick="window.print();" title="Print this medical note" style="display: inline-flex; align-items: center; gap: 5px;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                  <span>Print</span>
                 </button>
-                <form method="post" action="{{ url_for('main.delete_consultation', consultation_id=consultation.id) }}" style="display: inline;">
+
+                <form method="post" action="{{ url_for('main.delete_consultation', consultation_id=consultation.id) }}" class="remove-record-form" style="display: inline;">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                  <button type="button" class="button danger small trigger-delete-dialog" data-doctor="Consultation record" data-date="{{ consultation.timestamp.strftime('%d %b %Y') }}">
-                    Delete
+                  <button type="button" class="button danger small trigger-delete-dialog" data-doctor="Consultation record #{{ consultation.id }}" data-date="{{ consultation.timestamp.strftime('%d %b %Y') }}" title="Delete record" style="display: inline-flex; align-items: center; gap: 5px;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    <span>Delete</span>
                   </button>
                 </form>
               </div>
-            </header>
-            <div class="timeline-body">
-              <div>
-                <strong style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); display: block; margin-bottom: 4px;">Patient Recorded Observations</strong>
-                <p class="timeline-symptoms">{{ consultation.symptoms }}</p>
-              </div>
-              {% if consultation.summary %}
-                <div>
-                  <strong style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); display: block; margin-bottom: 4px;">Physician Briefing Outline</strong>
-                  <div class="timeline-summary">{{ consultation.summary }}</div>
-                </div>
-              {% endif %}
-            </div>
-          </article>
-        {% endfor %}
-      </div>
-    {% else %}
-      <div class="empty-state">
-        <div class="stat-icon accent" style="margin: 0 auto 12px auto;">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            </article>
+          {% endfor %}
         </div>
-        <p><strong>No consultation records on file yet.</strong></p>
-        <p class="muted-text">Logging symptoms before your clinic visit generates a clear briefing outline for your physician.</p>
-        <a class="button primary small" href="{{ url_for('main.dashboard') }}">+ Log New Symptoms</a>
-      </div>
-    {% endif %}
+      {% endif %}
+    </div>
   </section>
 
   <!-- Accessible Remove Confirmation Dialog -->
   <dialog id="deleteAppointmentDialog" class="confirm-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-desc">
     <h2 id="dialog-title">Delete consultation record</h2>
-    <p id="dialog-desc">Are you sure you want to permanently delete this consultation note from <span id="dialog-appointment-date"></span>? This action cannot be undone.</p>
+    <p id="dialog-desc">Are you sure you want to permanently delete <span id="dialog-doctor-name">this consultation note</span> from <span id="dialog-appointment-date"></span>? This action cannot be undone.</p>
     <div class="dialog-actions">
       <button type="button" class="button secondary small" id="cancelDialogBtn">Keep record</button>
       <button type="button" class="button danger small" id="confirmDeleteBtn">Delete</button>
@@ -140,6 +251,51 @@
 {% endblock %}
 
 {% block scripts %}
+  <script>
+    // 1. Two-Way Section Toggle (Matching My Appointments)
+    const sectionOverview = document.getElementById("viewSectionOverview");
+    const sectionRecords = document.getElementById("viewSectionRecords");
+    const toggleBtn = document.getElementById("myRecordsToggleBtn");
+    const toggleBtnText = document.getElementById("myRecordsBtnText");
+    const openRecordsFromOverviewBtn = document.getElementById("openRecordsFromOverviewBtn");
+    const backToOverviewBtn = document.getElementById("backToOverviewBtn");
+
+    let isShowingRecords = false;
+
+    function setHealthRecordsView(showRecords) {
+      isShowingRecords = showRecords;
+      if (sectionOverview && sectionRecords) {
+        sectionOverview.style.display = showRecords ? "none" : "block";
+        sectionRecords.style.display = showRecords ? "block" : "none";
+      }
+
+      if (toggleBtn) {
+        toggleBtn.classList.toggle("is-active", showRecords);
+        if (toggleBtnText) {
+          toggleBtnText.textContent = showRecords ? "← Back to Overview" : "Past Consultation Records";
+        }
+        const countBadge = document.getElementById("myRecordsCountBadge");
+        if (countBadge) {
+          countBadge.style.display = showRecords ? "none" : "inline-flex";
+        }
+      }
+
+      if (showRecords) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    if (toggleBtn) {
+      toggleBtn.addEventListener("click", () => setHealthRecordsView(!isShowingRecords));
+    }
+    if (openRecordsFromOverviewBtn) {
+      openRecordsFromOverviewBtn.addEventListener("click", () => setHealthRecordsView(true));
+    }
+    if (backToOverviewBtn) {
+      backToOverviewBtn.addEventListener("click", () => setHealthRecordsView(false));
+    }
+  </script>
+
   {% if chart_labels %}
     <script>
       const ctx = document.getElementById('historyChart');
@@ -151,15 +307,16 @@
             datasets: [{
               label: 'Consultation notes',
               data: {{ chart_data|tojson }},
-              borderColor: '#0D5C46',
-              backgroundColor: 'rgba(13, 92, 70, 0.12)',
-              tension: 0.3,
+              borderColor: '#135234',
+              backgroundColor: 'rgba(19, 82, 52, 0.08)',
+              tension: 0.35,
               fill: true,
               borderWidth: 2.5,
               pointRadius: 4,
-              pointBackgroundColor: '#C25E34',
+              pointBackgroundColor: '#135234',
               pointBorderColor: '#FFFFFF',
-              pointBorderWidth: 1.5
+              pointBorderWidth: 2,
+              pointHoverRadius: 6
             }]
           },
           options: {
@@ -168,22 +325,22 @@
             plugins: {
               legend: { display: false },
               tooltip: {
-                backgroundColor: '#1A2229',
-                titleFont: { family: 'system-ui, sans-serif', size: 13 },
-                bodyFont: { family: 'system-ui, sans-serif', size: 13 },
+                backgroundColor: '#151D22',
+                titleFont: { family: 'inherit', size: 13, weight: 'bold' },
+                bodyFont: { family: 'inherit', size: 13 },
                 padding: 10,
-                cornerRadius: 6
+                cornerRadius: 8
               }
             },
             scales: {
               x: {
                 grid: { display: false },
-                ticks: { color: '#5C6873', font: { family: 'system-ui, sans-serif', size: 12 } }
+                ticks: { color: '#64748B', font: { family: 'inherit', size: 12 } }
               },
               y: {
                 beginAtZero: true,
-                ticks: { stepSize: 1, color: '#5C6873', font: { family: 'system-ui, sans-serif', size: 12 } },
-                grid: { color: '#E1E6EB' }
+                ticks: { stepSize: 1, color: '#64748B', font: { family: 'inherit', size: 12 } },
+                grid: { color: '#F1F5F9' }
               }
             }
           }

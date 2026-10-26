@@ -1,85 +1,302 @@
 {% if analysis.red_flag_alert and analysis.red_flag_alert.is_emergency %}
-  <div class="emergency-alert-banner" style="background: rgba(220, 38, 38, 0.08); border: 1.5px solid #dc2626; border-radius: 12px; padding: 18px 20px; margin-bottom: 20px; display: flex; gap: 14px; align-items: flex-start;">
-    <div style="background: #dc2626; color: #ffffff; width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 19px; flex-shrink: 0; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);">!</div>
-    <div style="flex: 1;">
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
-        <span style="color: #dc2626; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Critical Triage Alert: Urgent Evaluation Required</span>
-        <span class="status-badge danger" style="background: #dc2626; color: #fff; font-size: 10px; padding: 2px 7px;">HIGH RISK</span>
+  <div class="result-emergency-banner" role="alert">
+    <div class="emergency-icon-circle">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+    </div>
+    <div class="emergency-banner-content">
+      <div class="emergency-title-row">
+        <span class="emergency-badge">Emergency Alert</span>
+        <strong class="emergency-title-text">Please Seek Immediate Medical Help</strong>
       </div>
-      <p style="margin: 0 0 8px 0; font-size: 13.5px; line-height: 1.5; color: #1e293b; font-weight: 500;">
+      <p class="emergency-desc">
         {{ analysis.red_flag_alert.advisory }}
       </p>
       {% if analysis.red_flag_alert.flags %}
-        <div style="font-size: 12px; color: #64748b;">
-          <strong>Clinical indicators triggered:</strong> {{ analysis.red_flag_alert.flags | join('; ') }}
+        <div class="emergency-flags-list">
+          <strong>Urgent symptoms detected:</strong> {{ analysis.red_flag_alert.flags | join('; ') }}
         </div>
       {% endif %}
+      <div class="emergency-actions-row">
+        <a href="tel:112" class="emergency-call-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          Call Emergency (112)
+        </a>
+        <a href="{{ url_for('main.hospital_locator') }}" class="emergency-finder-link">
+          Find 24/7 Hospitals Nearby &rarr;
+        </a>
+      </div>
     </div>
   </div>
 {% endif %}
 
-<section class="analysis-summary-card premium-surface">
-  <div>
-    <span class="eyebrow">Clinical summary</span>
-    <h3 class="analysis-title">{{ analysis_text(analysis.presenting_complaint) }}</h3>
-    <p class="section-copy">Use the concise sections below to review likely causes, next checks, treatment direction, medication notes, and safety guidance.</p>
+<!-- Primary Summary Card -->
+{% set complaint_full = analysis_text(analysis.presenting_complaint) %}
+{% if " — Follow-up answers: " in complaint_full %}
+  {% set parts = complaint_full.split(" — Follow-up answers: ") %}
+  {% set main_symp = parts[0] %}
+  {% set follow_answers = parts[1].split("; ") %}
+{% elif "—" in complaint_full %}
+  {% set parts = complaint_full.split("—") %}
+  {% set main_symp = parts[0] %}
+  {% set follow_answers = parts[1].split("; ") %}
+{% else %}
+  {% set main_symp = complaint_full %}
+  {% set follow_answers = [] %}
+{% endif %}
+
+<section class="result-summary-card" aria-label="What You're Experiencing">
+  <div class="summary-complaint-block">
+    <div class="summary-eyebrow-row">
+      <span class="summary-eyebrow">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        What You Shared
+      </span>
+    </div>
+    <h2 class="summary-complaint-title">{{ main_symp|trim }}</h2>
+    <p class="summary-subtitle">Here is a simple breakdown of possible causes, helpful tests, and questions for your doctor visit.</p>
   </div>
-  <div class="analysis-chip-grid">
-    {% for item in analysis_points(analysis.differential_diagnoses, 3) %}
-      <span class="status-pill">{{ item }}</span>
-    {% endfor %}
+
+  <div class="summary-differential-block">
+    <div class="differential-block-header">
+      <span class="chips-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Possible Causes
+      </span>
+      <span class="differential-sub-note">Based on your symptoms</span>
+    </div>
+    <div class="chips-cluster">
+      {% for item in analysis_points(analysis.differential_diagnoses, 3) %}
+        <div class="matched-disease-pill {% if loop.first %}primary-pill{% endif %}">
+          <span class="pill-dot"></span>
+          <span class="pill-rank-badge">{% if loop.first %}Most Likely{% else %}Match {{ loop.index }}{% endif %}</span>
+          <span class="pill-text">{{ item }}</span>
+        </div>
+      {% endfor %}
+    </div>
   </div>
+
+  {% if follow_answers and follow_answers|length > 0 %}
+    <div class="summary-followup-strip">
+      <span class="followup-strip-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Additional Details:
+      </span>
+      <div class="followup-pills-row">
+        {% for ans in follow_answers %}
+          {% if ans|trim %}
+            <span class="context-data-pill">{{ ans|trim|replace('+', '') }}</span>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
 </section>
 
-<div class="result-grid">
-  <article class="result-card">
-    <span>Differential diagnoses</span>
-    <ul class="result-list">
+<!-- 2-Column Responsive Structured Cards Grid -->
+<div class="result-cards-grid">
+  <!-- Card 1: Possible Conditions -->
+  <article class="result-section-card card-diagnoses">
+    <div class="result-card-header">
+      <div class="card-icon-circle icon-sage" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/>
+        </svg>
+      </div>
+      <div class="card-title-group">
+        <h3 class="card-main-title">Possible Conditions</h3>
+        <span class="card-sub-label">Conditions to discuss with your doctor</span>
+      </div>
+    </div>
+    <ul class="result-items-list numbered-list">
       {% for item in analysis_points(analysis.differential_diagnoses) %}
-        <li>{{ item }}</li>
+        <li class="result-list-item">
+          <span class="item-rank-num">{{ loop.index }}</span>
+          <span class="item-text-bold">{{ item }}</span>
+        </li>
       {% endfor %}
     </ul>
   </article>
-  <article class="result-card">
-    <span>Investigations</span>
-    <ul class="result-list">
+
+  <!-- Card 2: Recommended Investigations -->
+  <article class="result-section-card card-investigations">
+    <div class="result-card-header">
+      <div class="card-icon-circle icon-blue" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+      </div>
+      <div class="card-title-group">
+        <h3 class="card-main-title">Helpful Tests &amp; Checks</h3>
+        <span class="card-sub-label">Checks your doctor might suggest</span>
+      </div>
+    </div>
+    <ul class="result-items-list bulleted-list">
       {% for item in analysis_points(analysis.investigations) %}
-        <li>{{ item }}</li>
+        <li class="result-list-item">
+          <span class="item-check-bullet" aria-hidden="true">✓</span>
+          <span class="item-text">{{ item }}</span>
+        </li>
       {% endfor %}
     </ul>
   </article>
-  <article class="result-card">
-    <span>Treatment</span>
-    <ul class="result-list">
+
+  <!-- Card 3: Treatment Direction -->
+  <article class="result-section-card card-treatment">
+    <div class="result-card-header">
+      <div class="card-icon-circle icon-teal" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      </div>
+      <div class="card-title-group">
+        <h3 class="card-main-title">Care &amp; Recovery Tips</h3>
+        <span class="card-sub-label">Simple steps to help you recover</span>
+      </div>
+    </div>
+    <ul class="result-items-list bulleted-list">
       {% for item in analysis_points(analysis.treatment) %}
-        <li>{{ item }}</li>
+        <li class="result-list-item">
+          <span class="item-check-bullet" aria-hidden="true">✓</span>
+          <span class="item-text">{{ item }}</span>
+        </li>
       {% endfor %}
     </ul>
   </article>
-  <article class="result-card">
-    <span>Medications</span>
-    <ul class="result-list">
+
+  <!-- Card 4: Medication Guidance -->
+  <article class="result-section-card card-medications">
+    <div class="result-card-header">
+      <div class="card-icon-circle icon-purple" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>
+        </svg>
+      </div>
+      <div class="card-title-group">
+        <h3 class="card-main-title">Medicines Often Used</h3>
+        <span class="card-sub-label">Medicines a doctor may prescribe</span>
+      </div>
+    </div>
+    <ul class="result-items-list bulleted-list">
       {% for item in analysis_points(analysis.medications) %}
-        <li>{{ item }}</li>
+        <li class="result-list-item">
+          <span class="item-check-bullet" aria-hidden="true">✓</span>
+          <span class="item-text">{{ item }}</span>
+        </li>
       {% endfor %}
     </ul>
+
+    <!-- Statutory Safety & Legal Notice Line -->
+    <div class="medication-safety-notice" role="note">
+      <div class="safety-notice-icon" aria-hidden="true">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <div class="safety-notice-content">
+        <p class="safety-notice-main">
+          <strong>Safety &amp; Legal Notice:</strong> These medications are for clinical education &amp; discussion only. <em>Never self-medicate.</em> Always consult a registered medical doctor (MBBS/MD) for physical diagnosis, exact dosage, and a valid prescription.
+        </p>
+        <p class="safety-notice-hindi">
+          <strong>वैधानिक सुरक्षा सलाह:</strong> यह दवाएं केवल जानकारी के लिए हैं। किसी भी दवा का सेवन करने से पहले डॉक्टर की पर्ची (Prescription) और सलाह अवश्य लें।
+        </p>
+      </div>
+    </div>
+
+    <div class="card-footer-action">
+      <a href="{{ url_for('main.medications') }}" class="pharmacy-link-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span>View in Pharmacy Store &rarr;</span>
+      </a>
+    </div>
   </article>
-  <article class="result-card">
-    <span>Precautions</span>
-    <ul class="result-list">
+
+  <!-- Card 5: Precautions & Safety -->
+  <article class="result-section-card card-precautions">
+    <div class="result-card-header">
+      <div class="card-icon-circle icon-amber" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+      <div class="card-title-group">
+        <h3 class="card-main-title">Precautions &amp; Warnings</h3>
+        <span class="card-sub-label">What to avoid and when to seek urgent help</span>
+      </div>
+    </div>
+    <ul class="result-items-list bulleted-list">
       {% for item in analysis_points(analysis.precautions) %}
-        <li>{{ item }}</li>
+        <li class="result-list-item">
+          <span class="item-alert-bullet" aria-hidden="true">&bull;</span>
+          <span class="item-text">{{ item }}</span>
+        </li>
       {% endfor %}
     </ul>
   </article>
-  <article class="result-card result-card-callout">
-    <span>Patient-friendly takeaway</span>
-    <p class="result-callout-copy">{{ analysis_summary(analysis.treatment, 1) }}</p>
-    <small>{{ analysis_summary(analysis.precautions, 1) }}</small>
+
+  <!-- Card 6: Quick Takeaway -->
+  <article class="result-section-card card-takeaway">
+    <div class="result-card-header">
+      <div class="card-icon-circle icon-leaf" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A4.49 4.49 0 0 0 8 20C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5c0 1.5 1 2.5 2 2.5 1 0 1.5-.5 2-1s1-1 1-1c1-1 2-1 2-1s-1 1-1 2c0 .5.5 1 1.5 1s2-.5 2-1 1-1 1-1c1-1 2-1 2-1s-1 1-1 2c0 .5.5 1 1.5 1 1 0 2-.5 2-1 .5-.5 1-1 1-1s-.5 1 0 2c.5 1 1.5 1.5 2.5 1.5 1.5 0 2.5-1 3-2C22 17 21 11 17 8z"/>
+        </svg>
+      </div>
+      <div class="card-title-group">
+        <h3 class="card-main-title">Quick Takeaway</h3>
+        <span class="card-sub-label">What you should do today</span>
+      </div>
+    </div>
+    <div class="takeaway-body">
+      <p class="takeaway-main-text">{{ analysis_summary(analysis.treatment, 1) }}</p>
+      <div class="takeaway-callout-pill">
+        <span class="pill-bold">Key Recommendation:</span>
+        <span>{{ analysis_summary(analysis.precautions, 1) }}</span>
+      </div>
+    </div>
   </article>
 </div>
 
-<div class="notice-panel">
-  <strong>Disclaimer</strong>
-  <p>{{ analysis_text(analysis.disclaimer) }}</p>
+<!-- Prepare for Your Doctor Visit Card -->
+<section class="result-action-card" aria-label="Appointment Preparation">
+  <div class="action-card-left">
+    <div class="action-icon-box" aria-hidden="true">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+      </svg>
+    </div>
+    <div class="action-card-text">
+      <h3 class="action-card-title">Prepare for Your Doctor Visit</h3>
+      <p class="action-card-desc">Save this summary to your records or attach it when booking an appointment.</p>
+    </div>
+  </div>
+  <div class="action-card-buttons">
+    <a class="button primary" href="{{ url_for('main.appointment') }}">
+      + Book Appointment
+    </a>
+    <a class="button secondary" href="{{ url_for('main.history') }}">
+      View Past Records &rarr;
+    </a>
+  </div>
+</section>
+
+<!-- Medical Disclaimer Panel -->
+<div class="result-disclaimer-panel" role="note">
+  <div class="disclaimer-header">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="16" x2="12" y2="12"></line>
+      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+    </svg>
+    <strong>Important Medical Note</strong>
+  </div>
+  <p class="disclaimer-text">{{ analysis_text(analysis.disclaimer) }}</p>
 </div>

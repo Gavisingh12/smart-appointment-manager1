@@ -1,33 +1,43 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="CareCompass AI share card">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Care Cliniq share card">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#07131d"/>
-      <stop offset="55%" stop-color="#0b1b2a"/>
-      <stop offset="100%" stop-color="#071720"/>
+      <stop offset="0%" stop-color="#061A10"/>
+      <stop offset="50%" stop-color="#0B2B1B"/>
+      <stop offset="100%" stop-color="#081E13"/>
     </linearGradient>
-    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#8ff6e5"/>
-      <stop offset="100%" stop-color="#46d8c7"/>
+    <linearGradient id="emblem-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#135234"/>
+      <stop offset="100%" stop-color="#229660"/>
     </linearGradient>
   </defs>
   <rect width="1200" height="630" fill="url(#bg)"/>
-  <circle cx="1070" cy="120" r="180" fill="#46d8c7" opacity="0.14"/>
-  <circle cx="140" cy="580" r="220" fill="#ff9966" opacity="0.12"/>
-  <rect x="72" y="70" width="88" height="88" rx="26" fill="url(#accent)"/>
-  <path d="M104 114c0-18 13-31 29-31 12 0 22 6 27 15l-12 6c-3-5-8-8-15-8-9 0-16 8-16 18 0 11 7 18 16 18 7 0 12-3 15-8l12 6c-5 9-15 15-27 15-16 0-29-13-29-31Z" fill="#05212a"/>
-  <text x="72" y="250" fill="#edf6ff" font-family="Space Grotesk, Arial, sans-serif" font-size="76" font-weight="700">CareCompass AI</text>
-  <text x="72" y="330" fill="#cfe0ef" font-family="Manrope, Arial, sans-serif" font-size="34">A cleaner clinical support dashboard for symptom intake, reports,</text>
-  <text x="72" y="375" fill="#cfe0ef" font-family="Manrope, Arial, sans-serif" font-size="34">appointments, PDF export, and hospital discovery.</text>
-  <g transform="translate(72 452)">
-    <rect width="250" height="54" rx="27" fill="#ffffff" opacity="0.08"/>
-    <text x="28" y="35" fill="#edf6ff" font-family="Manrope, Arial, sans-serif" font-size="24">Recruiter-ready demo</text>
+  <circle cx="1070" cy="120" r="220" fill="#229660" opacity="0.12"/>
+  <circle cx="160" cy="560" r="260" fill="#135234" opacity="0.20"/>
+
+  <!-- Logo Emblem -->
+  <g transform="translate(80, 80)">
+    <rect width="96" height="96" rx="28" fill="url(#emblem-grad)"/>
+    <path d="M48 20C44.69 20 42 22.69 42 26V42H26C22.69 42 20 44.69 20 48C20 51.31 22.69 54 26 54H42V70C42 73.31 44.69 76 48 76C51.31 76 54 73.31 54 70V54H70C73.31 54 76 51.31 76 48C76 44.69 73.31 42 70 42H54V26C54 22.69 51.31 20 48 20Z" fill="#FFFFFF"/>
+    <path d="M35 48H41.5L45.5 38L50.5 58L54.5 48H61" stroke="#0E482C" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
-  <g transform="translate(344 452)">
-    <rect width="220" height="54" rx="27" fill="#ffffff" opacity="0.08"/>
-    <text x="28" y="35" fill="#edf6ff" font-family="Manrope, Arial, sans-serif" font-size="24">Modern UI system</text>
+
+  <!-- Typography -->
+  <text x="195" y="148" fill="#FFFFFF" font-family="'Plus Jakarta Sans', -apple-system, sans-serif" font-size="62" font-weight="800" letter-spacing="-1.5">Care<tspan fill="#34D399">Cliniq</tspan></text>
+  
+  <text x="80" y="270" fill="#F8FAFC" font-family="'Plus Jakarta Sans', -apple-system, sans-serif" font-size="44" font-weight="700" letter-spacing="-1">Smart Health Companion for Every Doctor Visit</text>
+  <text x="80" y="340" fill="#CBD5E1" font-family="'Plus Jakarta Sans', -apple-system, sans-serif" font-size="26" font-weight="400">1-Minute Doctor Summaries &bull; Find Local Hospitals &bull; Organize Medications</text>
+
+  <!-- Badges -->
+  <g transform="translate(80, 430)">
+    <rect width="260" height="58" rx="29" fill="#FFFFFF" opacity="0.10" stroke="#FFFFFF" stroke-opacity="0.2"/>
+    <text x="32" y="36" fill="#F8FAFC" font-family="'Plus Jakarta Sans', -apple-system, sans-serif" font-size="20" font-weight="600">100% Private Health</text>
   </g>
-  <g transform="translate(586 452)">
-    <rect width="250" height="54" rx="27" fill="#ffffff" opacity="0.08"/>
-    <text x="28" y="35" fill="#edf6ff" font-family="Manrope, Arial, sans-serif" font-size="24">Deployable Flask stack</text>
+  <g transform="translate(365, 430)">
+    <rect width="280" height="58" rx="29" fill="#FFFFFF" opacity="0.10" stroke="#FFFFFF" stroke-opacity="0.2"/>
+    <text x="32" y="36" fill="#F8FAFC" font-family="'Plus Jakarta Sans', -apple-system, sans-serif" font-size="20" font-weight="600">1-Minute Doctor Notes</text>
+  </g>
+  <g transform="translate(670, 430)">
+    <rect width="260" height="58" rx="29" fill="#FFFFFF" opacity="0.10" stroke="#FFFFFF" stroke-opacity="0.2"/>
+    <text x="32" y="36" fill="#F8FAFC" font-family="'Plus Jakarta Sans', -apple-system, sans-serif" font-size="20" font-weight="600">Verified Clinics</text>
   </g>
 </svg>

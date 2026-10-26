@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Settings | Care Cliniq{% endblock %}
+{% block meta_description %}Manage your emergency contact details, clinical preferences, and medical background.{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <div class="page-header-row">
+      <div>
+        <span class="eyebrow">Profile &amp; Emergency Details</span>
+        <h1 class="page-title">Settings</h1>
+        <p class="page-subtitle">Update your emergency contact, blood group, and health notes.</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid-12">
+    <div class="col-8">
+      <section class="card" aria-labelledby="settings-profile-heading">
+        <h2 id="settings-profile-heading" class="card-title">Emergency &amp; Health Profile</h2>
+        <p class="card-subtitle">This information is safely kept in your account and added to your doctor visit summaries.</p>
+
+        <form method="post" class="stack-form" style="margin-top: 20px;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="blood_group" class="input-label">Blood group</label>
+              <input type="text" id="blood_group" name="blood_group" class="input-control" value="{{ profile.blood_group or '' }}" placeholder="e.g. O+, A+, B-" maxlength="10">
+            </div>
+
+            <div class="form-group">
+              <label for="emergency_phone" class="input-label">Emergency contact phone</label>
+              <input type="tel" id="emergency_phone" name="emergency_contact_phone" class="input-control" value="{{ profile.emergency_contact_phone or '' }}" placeholder="e.g. +91 98765 43210" maxlength="50">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="emergency_name" class="input-label">Emergency contact name &amp; relation</label>
+            <input type="text" id="emergency_name" name="emergency_contact_name" class="input-control" value="{{ profile.emergency_contact_name or '' }}" placeholder="e.g. Jane Doe (Spouse)" maxlength="100">
+          </div>
+
+          <div class="form-group">
+            <label for="allergies" class="input-label">Known drug &amp; environmental allergies</label>
+            <textarea id="allergies" name="allergies" rows="2" class="input-control" placeholder="e.g. Penicillin, Sulfa drugs, Peanuts">{{ profile.allergies or '' }}</textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="chronic_conditions" class="input-label">Chronic health conditions</label>
+            <textarea id="chronic_conditions" name="chronic_conditions" rows="2" class="input-control" placeholder="e.g. Type 2 Diabetes, Hypertension, Asthma">{{ profile.chronic_conditions or '' }}</textarea>
+          </div>
+
+          <div class="form-actions-row">
+            <button type="submit" class="button primary">Save profile updates</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <div class="col-4">
+      <section class="card" aria-labelledby="account-details-heading">
+        <h2 id="account-details-heading" class="card-title">Account Information</h2>
+        
+        <div class="account-spec-list" style="margin-top: 14px;">
+          <div class="spec-item">
+            <span class="spec-label">Patient Name</span>
+            <strong class="spec-value">{{ current_user.display_name }}</strong>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">Registered Email</span>
+            <span class="spec-value">{{ current_user.email }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">Account Created</span>
+            <span class="spec-value">{{ current_user.created_at.strftime('%d %b %Y') if current_user.created_at else 'Active' }}</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-hairline);">
+          <a href="{{ url_for('auth.logout') }}" class="button ghost small danger-text" style="width: 100%; text-align: center;">Sign out of Care Cliniq</a>
+        </div>
+      </section>
+
+      <div class="sidebar-trust-card" style="margin-top: 20px;">
+        <div class="trust-card-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        </div>
+        <div>
+          <strong>100% Private &amp; Secure</strong>
+          <span>Your health notes and records are completely private to you and never shared without your permission.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -95,7 +95,7 @@ def build_pdf_page_stream(title, lines):
     return "\n".join(commands).encode("latin-1", "replace")
 
 
-def build_builtin_pdf(lines, title="CareCompass AI Consultation Report"):
+def build_builtin_pdf(lines, title="Care Cliniq Consultation Report"):
     page_chunks = []
     max_lines_per_page = 42
     for index in range(0, len(lines), max_lines_per_page):

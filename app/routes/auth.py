@@ -1,12 +1,14 @@
+import datetime
+import secrets
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
-from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from flask_mail import Message
 from sqlalchemy import func, or_
 
 from app.config import has_real_mail_value
 from app.extensions import db, mail
-from app.models import User
+from app.models import EmailOtp, User, utc_now
 
 
 auth_bp = Blueprint("auth", __name__)
@@ -86,7 +88,7 @@ def send_password_reset_email(user_email):
 
     html = render_template("auth/reset_email.html", reset_url=reset_url)
     message = Message(
-        subject="Reset your CareCompass AI password",
+        subject="Reset your Care Cliniq password",
         recipients=[user_email],
         html=html
     )
@@ -109,7 +111,7 @@ def send_verification_email(user_email):
 
     html = render_template("auth/verification_email.html", verification_url=verification_url)
     message = Message(
-        subject="Verify your CareCompass AI account",
+        subject="Verify your Care Cliniq account",
         recipients=[user_email],
         html=html
     )
@@ -119,6 +121,170 @@ def send_verification_email(user_email):
     except Exception as exc:
         current_app.logger.error("Failed to send verification email: %s", exc)
         return False, verification_url
+
+
+def generate_and_send_otp(email, name=None, purpose="login"):
+    """Generate a secure 6-digit OTP, store in database, and send to user's email."""
+    code = f"{secrets.randbelow(900000) + 100000}"
+    # Invalidate previous unused codes for this email
+    EmailOtp.query.filter_by(email=email, is_used=False).update({"is_used": True})
+
+    expires_at = utc_now() + datetime.timedelta(minutes=10)
+    otp = EmailOtp(
+        email=email,
+        code=code,
+        name=name,
+        purpose=purpose,
+        expires_at=expires_at,
+    )
+    db.session.add(otp)
+    db.session.commit()
+
+    email_sent = False
+    if all(
+        has_real_mail_value(current_app.config.get(key))
+        for key in ("MAIL_USERNAME", "MAIL_PASSWORD", "MAIL_DEFAULT_SENDER")
+    ):
+        try:
+            html = render_template("auth/otp_email.html", otp_code=code, purpose=purpose, name=name)
+            msg = Message(
+                subject=f"{code} is your Care Cliniq verification code",
+                recipients=[email],
+                html=html,
+            )
+            mail.send(msg)
+            email_sent = True
+        except Exception as exc:
+            current_app.logger.error("Failed to send OTP email: %s", exc)
+    else:
+        current_app.logger.info("Dev/Local mode: Verification code for %s is %s", email, code)
+
+    return code, email_sent
+
+
+@auth_bp.route("/send-otp", methods=["POST"])
+def send_otp():
+    if current_user.is_authenticated:
+        return redirect(url_for("main.dashboard"))
+
+    raw_email = request.form.get("email") or (request.json.get("email") if request.is_json else "")
+    email = normalize_email(raw_email)
+    raw_name = request.form.get("name") or (request.json.get("name") if request.is_json else "")
+    name = normalize_name(raw_name)
+    purpose = (request.form.get("purpose") or (request.json.get("purpose") if request.is_json else "")) or "login"
+
+    if not email or "@" not in email or "." not in email:
+        error_msg = "Please enter a valid email address."
+        if request.is_json:
+            return jsonify({"success": False, "error": error_msg}), 400
+        flash(error_msg, "warning")
+        return redirect(url_for("auth.login"))
+
+    code, email_sent = generate_and_send_otp(email, name=name, purpose=purpose)
+    session["pending_otp_email"] = email
+    session["pending_otp_name"] = name
+    session["pending_otp_purpose"] = purpose
+
+    dev_code = code if (not email_sent and allow_local_verification()) else None
+
+    if request.is_json:
+        return jsonify({
+            "success": True,
+            "email": email,
+            "email_sent": email_sent,
+            "dev_code": dev_code,
+            "redirect": url_for("auth.verify_otp", email=email),
+        })
+
+    if email_sent:
+        flash(f"A 6-digit verification code has been sent to {email}.", "success")
+    elif dev_code:
+        flash(f"Verification code sent to {email}. (Dev mode code: {dev_code})", "info")
+    else:
+        flash(f"A 6-digit verification code has been generated for {email}.", "info")
+
+    return redirect(url_for("auth.verify_otp", email=email))
+
+
+@auth_bp.route("/verify-otp", methods=["GET", "POST"])
+def verify_otp():
+    if current_user.is_authenticated:
+        return redirect(url_for("main.dashboard"))
+
+    email = normalize_email(request.args.get("email") or session.get("pending_otp_email"))
+
+    if request.method == "POST":
+        email = normalize_email(request.form.get("email") or session.get("pending_otp_email"))
+        code = (request.form.get("otp_code") or request.form.get("code") or "").strip()
+
+        if not email or not code:
+            flash("Please enter the 6-digit verification code sent to your email.", "warning")
+            return redirect(url_for("auth.verify_otp", email=email))
+
+        otp_record = (
+            EmailOtp.query
+            .filter_by(email=email, is_used=False)
+            .order_by(EmailOtp.created_at.desc())
+            .first()
+        )
+
+        if not otp_record or not otp_record.is_valid():
+            flash("Verification code has expired or is invalid. Please request a new code.", "warning")
+            return redirect(url_for("auth.login"))
+
+        if otp_record.code != code:
+            otp_record.attempts += 1
+            db.session.commit()
+            flash("Incorrect verification code. Please check your email and try again.", "danger")
+            return redirect(url_for("auth.verify_otp", email=email))
+
+        # OTP verified successfully!
+        otp_record.is_used = True
+        user = User.query.filter_by(email=email).first()
+
+        if not user:
+            # Register new user seamlessly
+            user_name = otp_record.name or normalize_name(email.split("@", 1)[0])
+            user = User(
+                username=user_name,
+                email=email,
+                email_verified=True,
+            )
+            user.set_password(secrets.token_urlsafe(16))
+            db.session.add(user)
+            db.session.commit()
+            flash("Account registered and verified successfully! Welcome to Care Cliniq.", "success")
+        else:
+            if not user.email_verified:
+                user.email_verified = True
+                db.session.commit()
+            flash(f"Welcome back, {user.display_name}! Signed in successfully.", "success")
+
+        login_user(user, remember=True)
+        session.pop("pending_otp_email", None)
+        session.pop("pending_otp_name", None)
+        session.pop("pending_otp_purpose", None)
+        return redirect(url_for("main.dashboard"))
+
+    # GET request
+    if not email:
+        flash("Please enter your email to receive a login code.", "info")
+        return redirect(url_for("auth.login"))
+
+    active_otp = (
+        EmailOtp.query
+        .filter_by(email=email, is_used=False)
+        .order_by(EmailOtp.created_at.desc())
+        .first()
+    )
+    dev_code = active_otp.code if (active_otp and allow_local_verification()) else None
+
+    return render_template(
+        "auth/verify_otp.html",
+        email=email,
+        dev_code=dev_code,
+        purpose=session.get("pending_otp_purpose", "login"),
+    )
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])

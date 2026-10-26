@@ -1,11 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="CareCompass AI">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Care Cliniq">
   <defs>
-    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#8ff6e5"/>
-      <stop offset="100%" stop-color="#46d8c7"/>
+    <linearGradient id="cc-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B3822"/>
+      <stop offset="100%" stop-color="#1A7C50"/>
     </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.25"/>
+    </filter>
   </defs>
-  <rect width="128" height="128" rx="34" fill="#07131d"/>
-  <rect x="14" y="14" width="100" height="100" rx="28" fill="url(#g)"/>
-  <path d="M41 64c0-14 10-24 23-24 10 0 17 5 21 12l-10 5c-2-4-6-7-11-7-7 0-12 6-12 14 0 9 5 14 12 14 5 0 9-2 11-6l10 5c-4 7-11 12-21 12-13 0-23-10-23-25Z" fill="#05212a"/>
+  <!-- Rounded Emblem Background -->
+  <rect width="128" height="128" rx="36" fill="url(#cc-bg)"/>
+  
+  <!-- Modern Clinic Cross -->
+  <path d="M64 24C58.48 24 54 28.48 54 34V54H34C28.48 54 24 58.48 24 64C24 69.52 28.48 74 34 74H54V94C54 99.52 58.48 104 64 104C69.52 104 74 99.52 74 94V74H94C99.52 74 104 69.52 104 64C104 58.48 99.52 54 94 54H74V34C74 28.48 69.52 24 64 24Z" fill="#FFFFFF" filter="url(#shadow)"/>
+  
+  <!-- Vital Heart Pulse Wave -->
+  <path d="M46 64H55L60.5 50L67.5 78L73 64H82" stroke="#0E482C" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

@@ -10,7 +10,7 @@ from sqlalchemy import inspect, text
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from app.config import get_config, has_real_mail_value
-from app.extensions import db, login_manager, mail
+from app.extensions import db, login_manager, mail, migrate
 from app.models import User
 from app.services.ai import analysis_points, analysis_summary, analysis_text, configure_ai
 
@@ -34,6 +34,7 @@ def create_app():
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 
     db.init_app(app)
+    migrate.init_app(app, db)
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"
     mail.init_app(app)

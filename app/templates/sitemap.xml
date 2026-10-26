@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  {% for url in urls %}
+  {% for item in items %}
     <url>
-      <loc>{{ url }}</loc>
+      <loc>{{ item.loc if item is mapping else item }}</loc>
+      {% if item is mapping %}
+        {% if item.lastmod %}<lastmod>{{ item.lastmod }}</lastmod>{% endif %}
+        {% if item.changefreq %}<changefreq>{{ item.changefreq }}</changefreq>{% endif %}
+        {% if item.priority %}<priority>{{ item.priority }}</priority>{% endif %}
+      {% endif %}
     </url>
   {% endfor %}
 </urlset>

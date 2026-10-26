@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 200" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F8FAFC"/>
+      <stop offset="100%" stop-color="#EDF2F7"/>
+    </linearGradient>
+    <linearGradient id="foilGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#E2E8F0"/>
+      <stop offset="35%" stop-color="#FFFFFF"/>
+      <stop offset="70%" stop-color="#CBD5E1"/>
+      <stop offset="100%" stop-color="#E2E8F0"/>
+    </linearGradient>
+    <linearGradient id="stripBrand" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#DC2626"/>
+      <stop offset="100%" stop-color="#EA580C"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+  <rect width="280" height="200" rx="16" fill="url(#bgGrad)"/>
+  
+  <!-- Blister Pack Outer -->
+  <g filter="url(#cardShadow)">
+    <rect x="40" y="28" width="200" height="144" rx="12" fill="url(#foilGrad)" stroke="#CBD5E1" stroke-width="1.5"/>
+    <rect x="44" y="32" width="192" height="42" rx="8" fill="url(#stripBrand)"/>
+    
+    <!-- Brand on Pack -->
+    <text x="56" y="52" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-size="13" font-weight="bold">Naprosyn 500 Table</text>
+    <text x="56" y="66" fill="#F1F5F9" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-size="9">Naproxen 500 mg</text>
+    <rect x="195" y="44" width="32" height="16" rx="4" fill="#FFFFFF" fill-opacity="0.25"/>
+    <text x="211" y="55" fill="#FFFFFF" font-family="sans-serif" font-size="7.5" font-weight="bold" text-anchor="middle">TABLET</text>
+    
+    <!-- Blister Pockets (2 rows of 5) -->
+    <!-- Row 1 -->
+    <ellipse cx="68" cy="100" rx="15" ry="15" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1"/>
+    <ellipse cx="68" cy="98" rx="11" ry="11" fill="#DC2626" fill-opacity="0.25"/>
+    <line x1="61" y1="98" x2="75" y2="98" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/>
+
+    <ellipse cx="104" cy="100" rx="15" ry="15" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1"/>
+    <ellipse cx="104" cy="98" rx="11" ry="11" fill="#DC2626" fill-opacity="0.25"/>
+    <line x1="97" y1="98" x2="111" y2="98" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/>
+
+    <ellipse cx="140" cy="100" rx="15" ry="15" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1"/>
+    <ellipse cx="140" cy="98" rx="11" ry="11" fill="#DC2626" fill-opacity="0.25"/>
+    <line x1="133" y1="98" x2="147" y2="98" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/>
+
+    <ellipse cx="176" cy="100" rx="15" ry="15" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1"/>
+    <ellipse cx="176" cy="98" rx="11" ry="11" fill="#DC2626" fill-opacity="0.25"/>
+    <line x1="169" y1="98" x2="183" y2="98" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/>
+
+    <ellipse cx="212" cy="100" rx="15" ry="15" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1"/>
+    <ellipse cx="212" cy="98" rx="11" ry="11" fill="#DC2626" fill-opacity="0.25"/>
+    <line x1="205" y1="98" x2="219" y2="98" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/>
+
+    <!-- Row 2 -->
+    <ellipse cx="68" cy="142" rx="15" ry="15" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1"/>
+    <ellipse cx="68" cy="140" rx="11" ry="11" fill="#DC2626" fill-opacity="0.25"/>
+    <line x1="61" y1="140" x2="75" y2="140" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/>
+
+    <ellipse cx="104" cy="142" rx="15" ry="15" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1"/>
+    <ellipse cx="104" cy="140" rx="11" ry="11" fill="#DC2626" fill-opacity="0.25"/>
+    <line x1="97" y1="140" x2="111" y2="140" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/>
+
+    <ellipse cx="140" cy="142" rx="15" ry="15" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1"/>
+    <ellipse cx="140" cy="140" rx="11" ry="11" fill="#DC2626" fill-opacity="0.25"/>
+    <line x1="133" y1="140" x2="147" y2="140" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/>
+
+    <ellipse cx="176" cy="142" rx="15" ry="15" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1"/>
+    <ellipse cx="176" cy="140" rx="11" ry="11" fill="#DC2626" fill-opacity="0.25"/>
+    <line x1="169" y1="140" x2="183" y2="140" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/>
+
+    <ellipse cx="212" cy="142" rx="15" ry="15" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1"/>
+    <ellipse cx="212" cy="140" rx="11" ry="11" fill="#DC2626" fill-opacity="0.25"/>
+    <line x1="205" y1="140" x2="219" y2="140" stroke="#DC2626" stroke-width="1.2" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -1,0 +1,11 @@
+{
+  "total_diseases": 525,
+  "total_training_samples": 10900,
+  "train_samples": 8720,
+  "test_samples": 2180,
+  "top1_accuracy": 0.8211,
+  "top3_accuracy": 0.8881,
+  "top5_accuracy": 0.9083,
+  "algorithm": "TfidfVectorizer + Calibrated LinearSVC",
+  "vocabulary_size": 14558
+}

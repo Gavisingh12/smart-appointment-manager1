@@ -18,3 +18,5 @@ tests/*.db
 node_modules/
 .agents/
 skills-lock.json
+scratch/
+*.log

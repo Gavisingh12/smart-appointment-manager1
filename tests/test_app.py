@@ -37,6 +37,19 @@ def extract_verification_link(html):
     return parsed.path or verification_url
 
 
+@pytest.fixture(scope="session", autouse=True)
+def cleanup_test_database():
+    yield
+    with main2.app.app_context():
+        main2.db.session.remove()
+        main2.db.engine.dispose()
+    if TEST_DB_PATH.exists():
+        try:
+            TEST_DB_PATH.unlink()
+        except Exception:
+            pass
+
+
 @pytest.fixture(autouse=True)
 def reset_database():
     with main2.app.app_context():
@@ -106,8 +119,29 @@ def test_robots_and_sitemap_routes_exist(client):
 
     assert robots_response.status_code == 200
     assert b"Sitemap:" in robots_response.data
+    assert b"Allow: /hospital_locator" in robots_response.data
+    assert b"Allow: /medications" in robots_response.data
     assert sitemap_response.status_code == 200
     assert b"<urlset" in sitemap_response.data
+    assert b"<changefreq>" in sitemap_response.data
+    assert b"<priority>" in sitemap_response.data
+    assert b"medications" in sitemap_response.data
+    assert b"hospital" in sitemap_response.data and (b"hospital-locator" in sitemap_response.data or b"hospital_locator" in sitemap_response.data)
+
+
+def test_public_routes_and_schema_markup(client):
+    home_resp = client.get("/")
+    assert home_resp.status_code == 200
+    assert b"MedicalOrganization" in home_resp.data
+    assert b"MedicalWebPage" in home_resp.data
+
+    meds_resp = client.get("/medications")
+    assert meds_resp.status_code == 200
+    assert b"All Medicines" in meds_resp.data
+
+    hosp_resp = client.get("/hospital_locator")
+    assert hosp_resp.status_code == 200
+    assert b"Medical Centers" in hosp_resp.data or b"Hospitals" in hosp_resp.data or b"Jaipur" in hosp_resp.data
 
 
 def test_register_and_login_flow(client):
@@ -124,6 +158,87 @@ def test_login_with_username_works(client):
 
     login_response = login_user(client, identifier="Govinder Singh")
     assert b"Hello, Govinder" in login_response.data
+
+
+def test_send_otp_and_verify_login_and_registration(client):
+    from app.models import EmailOtp, User
+
+    # 1. Registration with Email OTP
+    login_page = client.get("/login")
+    csrf_token = extract_csrf_token(login_page.get_data(as_text=True))
+
+    send_resp = client.post(
+        "/send-otp",
+        data={
+            "email": "sarah.connor@example.com",
+            "name": "Sarah Connor",
+            "purpose": "register",
+            "csrf_token": csrf_token,
+        },
+        follow_redirects=True,
+    )
+    assert send_resp.status_code == 200
+    assert b"Check your email" in send_resp.data
+
+    otp_record = EmailOtp.query.filter_by(email="sarah.connor@example.com").order_by(EmailOtp.created_at.desc()).first()
+    assert otp_record is not None
+    assert len(otp_record.code) == 6
+
+    # 2. Test wrong code fails
+    wrong_resp = client.post(
+        "/verify-otp",
+        data={
+            "email": "sarah.connor@example.com",
+            "otp_code": "000000",
+            "csrf_token": csrf_token,
+        },
+        follow_redirects=True,
+    )
+    assert b"Incorrect verification code" in wrong_resp.data
+
+    # 3. Test correct code logs in and creates user
+    verify_resp = client.post(
+        "/verify-otp",
+        data={
+            "email": "sarah.connor@example.com",
+            "otp_code": otp_record.code,
+            "csrf_token": csrf_token,
+        },
+        follow_redirects=True,
+    )
+    assert verify_resp.status_code == 200
+    assert b"Sarah" in verify_resp.data
+
+    user = User.query.filter_by(email="sarah.connor@example.com").first()
+    assert user is not None
+    assert user.email_verified is True
+
+    # 4. Logout and Login again with OTP
+    client.get("/logout", follow_redirects=True)
+
+    login_page2 = client.get("/login")
+    csrf2 = extract_csrf_token(login_page2.get_data(as_text=True))
+    client.post(
+        "/send-otp",
+        data={
+            "email": "sarah.connor@example.com",
+            "purpose": "login",
+            "csrf_token": csrf2,
+        },
+        follow_redirects=True,
+    )
+    otp_record2 = EmailOtp.query.filter_by(email="sarah.connor@example.com", is_used=False).order_by(EmailOtp.created_at.desc()).first()
+    login_otp_resp = client.post(
+        "/verify-otp",
+        data={
+            "email": "sarah.connor@example.com",
+            "otp_code": otp_record2.code,
+            "csrf_token": csrf2,
+        },
+        follow_redirects=True,
+    )
+    assert login_otp_resp.status_code == 200
+    assert b"Sarah" in login_otp_resp.data
 
 
 def test_dashboard_creates_consultation_with_mocked_ai(client, monkeypatch):
@@ -449,4 +564,39 @@ def test_api_v1_endpoints(client):
     assert scan_res.status_code == 200
     scan_data = scan_res.get_json()["data"]
     assert scan_data["is_emergency"] is True
+
+
+def test_ml_disease_model_and_knowledge_base():
+    from app.ml import get_knowledge, get_metrics, predict_disease
+
+    metrics = get_metrics()
+    assert metrics.get("total_diseases", 0) >= 500
+
+    knowledge = get_knowledge()
+    assert len(knowledge) >= 500
+
+    # Test prediction on classic presentation
+    result = predict_disease("frequent urination, excessive thirst, unintended weight loss, and fatigue")
+    assert result is not None
+    assert "Diabetes" in result["primary_disease"] or result["confidence"] > 0
+    assert len(result["differentials"]) >= 1
+
+    # Verify all 5 required clinical attributes are present
+    profile = result["profile"]
+    assert "medications" in profile and len(profile["medications"]) > 0
+    assert "precautions" in profile and len(profile["precautions"]) > 0
+    assert "treatment" in profile and len(profile["treatment"]) > 0
+    assert "investigations" in profile and len(profile["investigations"]) > 0
+    assert "differential_diagnoses" in profile and len(profile["differential_diagnoses"]) > 0
+
+
+def test_dynamic_followup_questions_using_ml():
+    from app.services.ai import generate_followup_questions
+
+    questions = generate_followup_questions(
+        "increased thirst and frequent urination",
+        "Type 2 Diabetes Mellitus"
+    )
+    assert len(questions) >= 3
+    assert any("peshab" in q.lower() or "thirst" in q.lower() or "gala" in q.lower() or "diabetes" in q.lower() or "days" in q.lower() for q in questions)
 

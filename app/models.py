@@ -113,3 +113,18 @@ class Medication(db.Model):
             "is_active": self.is_active,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
+
+
+class EmailOtp(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), nullable=False, index=True)
+    code = db.Column(db.String(10), nullable=False)
+    name = db.Column(db.String(80), nullable=True)
+    purpose = db.Column(db.String(20), default="login")
+    created_at = db.Column(db.DateTime, default=utc_now)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    is_used = db.Column(db.Boolean, default=False)
+    attempts = db.Column(db.Integer, default=0)
+
+    def is_valid(self):
+        return not self.is_used and utc_now() <= self.expires_at and self.attempts < 5

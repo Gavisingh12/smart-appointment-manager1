@@ -1,0 +1,389 @@
+{% extends "base.html" %}
+
+{% block title %}Pharmacy Management &amp; Categories Admin | Care Cliniq{% endblock %}
+{% block meta_description %}Manage product listings, categories, pricing, stock and clinical indications for the Care Cliniq pharmacy catalog.{% endblock %}
+
+{% block content %}
+<div class="pharmacy-admin-container">
+  <!-- Top Bar -->
+  <div class="admin-header-row">
+    <div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+        <span class="badge live">Admin Workspace</span>
+        <span class="badge" style="background: #EAF4EE; color: #135234; border-color: #C3DFC9;">{{ total_products }} Products in Catalog</span>
+      </div>
+      <h1 class="page-title" style="margin: 0; font-size: 24px;">Pharmacy Inventory &amp; Category Manager</h1>
+      <p class="muted-text" style="margin: 4px 0 0 0; font-size: 13px;">Manage genuine medicine stocks, clinical indications, verified discounts, and category organization.</p>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <a href="{{ url_for('main.medications') }}" class="button ghost small" style="display: inline-flex; align-items: center; gap: 6px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+        <span>Back to Pharmacy Store</span>
+      </a>
+      <button type="button" class="button primary small" onclick="openAddModal()" style="display: inline-flex; align-items: center; gap: 6px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>+ Add New Medicine</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages-stack" style="margin-top: 14px;">
+        {% for category, message in messages %}
+          <div class="flash-alert flash-{{ category }}" style="padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 8px;">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Category Stats Grid -->
+  <section class="admin-category-stats-section" style="margin-top: 18px;">
+    <h3 style="font-size: 15px; font-weight: 700; color: #151D22; margin: 0 0 10px 0;">Product Categories Overview</h3>
+    <div class="admin-category-cards-grid">
+      {% for cat in categories %}
+        {% if cat.id != 'all' %}
+          {% set stats = category_stats.get(cat.id, {'count': 0, 'avg_price': 0}) %}
+          <a href="{{ url_for('main.pharmacy_admin', category=cat.id) }}" class="admin-cat-card {% if selected_category == cat.id %}is-active-cat{% endif %}">
+            <div class="admin-cat-header">
+              <span class="cat-icon-circle {{ cat.accent }}" style="width: 28px; height: 28px;" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="3"/></svg>
+              </span>
+              <span class="admin-cat-count-pill">{{ stats.count }} items</span>
+            </div>
+            <strong class="admin-cat-name">{{ cat.name }}</strong>
+            <span class="admin-cat-avg">Avg: &#8377;{{ stats.avg_price }}</span>
+          </a>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="admin-toolbar-card" style="margin-top: 20px;">
+    <form method="get" action="{{ url_for('main.pharmacy_admin') }}" class="admin-toolbar-form">
+      <div class="admin-search-group">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #7A8994;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" name="q" value="{{ search_query or '' }}" placeholder="Filter by medicine name, salt, or indication..." class="admin-search-input">
+      </div>
+
+      <div class="admin-filter-group">
+        <select name="category" class="admin-select-control" onchange="this.form.submit()">
+          <option value="all" {% if selected_category == 'all' %}selected{% endif %}>All Categories ({{ total_products }})</option>
+          {% for cat in categories %}
+            {% if cat.id != 'all' %}
+              <option value="{{ cat.id }}" {% if selected_category == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+        <button type="submit" class="button secondary small">Filter</button>
+        {% if search_query or (selected_category and selected_category != 'all') %}
+          <a href="{{ url_for('main.pharmacy_admin') }}" class="button ghost small">Reset</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <!-- Inventory Table -->
+  <div class="admin-table-card" style="margin-top: 14px;">
+    <div style="padding: 14px 18px; border-bottom: 1px solid #EAEFEA; display: flex; justify-content: space-between; align-items: center;">
+      <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: #151D22;">Catalog Items ({{ products|length }})</h3>
+      <span class="muted-text" style="font-size: 12px;">Sorted by catalog position</span>
+    </div>
+
+    <div class="table-responsive" style="overflow-x: auto;">
+      <table class="admin-products-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+        <thead>
+          <tr style="background: #F8FAF8; border-bottom: 1px solid #E5EBE6; text-align: left; color: #53626C;">
+            <th style="padding: 10px 14px;">Product</th>
+            <th style="padding: 10px 14px;">Category</th>
+            <th style="padding: 10px 14px;">Composition / Salt</th>
+            <th style="padding: 10px 14px;">Price / MRP</th>
+            <th style="padding: 10px 14px;">Discount</th>
+            <th style="padding: 10px 14px;">Type</th>
+            <th style="padding: 10px 14px;">Stock</th>
+            <th style="padding: 10px 14px; text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if products %}
+            {% for prod in products %}
+              <tr style="border-bottom: 1px solid #EFEFEF; transition: background 0.15s;" onmouseover="this.style.background='#FBFDFB'" onmouseout="this.style.background='transparent'">
+                <td style="padding: 12px 14px;">
+                  <strong style="color: #151D22; display: block; font-size: 13.5px;">{{ prod.name }}</strong>
+                  <span class="muted-text" style="font-size: 11px;">{{ prod.pack_size }} &bull; {{ prod.manufacturer }}</span>
+                </td>
+                <td style="padding: 12px 14px;">
+                  <span class="admin-cat-pill">{{ prod.category_name }}</span>
+                </td>
+                <td style="padding: 12px 14px;">
+                  <span style="color: #4A5B67; font-size: 12px;">{{ prod.salt }}</span>
+                  {% if prod.indications %}
+                    <small style="display: block; color: #7F8E98; font-size: 10.5px; margin-top: 2px;">
+                      Indications: {{ prod.indications[:3]|join(', ') }}{% if prod.indications|length > 3 %} +{{ prod.indications|length - 3 }} more{% endif %}
+                    </small>
+                  {% endif %}
+                </td>
+                <td style="padding: 12px 14px;">
+                  <strong style="color: #151D22;">&#8377;{{ prod.price }}</strong>
+                  <del class="muted-text" style="font-size: 11px; margin-left: 4px;">&#8377;{{ prod.mrp }}</del>
+                </td>
+                <td style="padding: 12px 14px;">
+                  <span class="admin-discount-badge">{{ prod.discount_percent }}% OFF</span>
+                </td>
+                <td style="padding: 12px 14px;">
+                  {% if prod.is_rx_required %}
+                    <span class="med-rx-badge rx">Rx Required</span>
+                  {% else %}
+                    <span class="med-rx-badge otc">OTC Available</span>
+                  {% endif %}
+                </td>
+                <td style="padding: 12px 14px;">
+                  <span style="font-weight: 600; color: {% if prod.stock > 20 %}#135234{% else %}#C53030{% endif %};">{{ prod.stock }} units</span>
+                </td>
+                <td style="padding: 12px 14px; text-align: right;">
+                  <div style="display: inline-flex; gap: 6px;">
+                    <button type="button" class="button ghost small" onclick='openEditModal({{ prod|tojson }})' title="Edit product" style="padding: 4px 8px; font-size: 12px;">Edit</button>
+                    <form method="post" action="{{ url_for('main.pharmacy_admin_delete', product_id=prod.id) }}" onsubmit="return confirm('Delete {{ prod.name }} from catalog?');" style="display: inline;">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="button ghost small danger-text" title="Delete product" style="padding: 4px 8px; font-size: 12px;">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="8" style="padding: 30px; text-align: center; color: #7B8B96;">
+                No medicines found matching the active filters.
+                <div style="margin-top: 10px;">
+                  <a href="{{ url_for('main.pharmacy_admin') }}" class="button ghost small">Reset Filters</a>
+                </div>
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- =======================================================================
+     ADD NEW PRODUCT MODAL
+     ======================================================================= -->
+<div class="admin-modal-backdrop" id="addProductModal" style="display: none;" onclick="if(event.target === this) closeAddModal();">
+  <div class="admin-modal-dialog">
+    <div class="admin-modal-header">
+      <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: #151D22;">Add New Medicine to Catalog</h3>
+      <button type="button" class="cart-drawer-close" onclick="closeAddModal()">&times;</button>
+    </div>
+    <form method="post" action="{{ url_for('main.pharmacy_admin') }}" class="admin-modal-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="input-label">Product Name *</label>
+          <input type="text" name="name" class="input-control" placeholder="e.g. Augmentin 625 Duo" required>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Category *</label>
+          <select name="category_id" class="input-control" required>
+            {% for cat in categories %}
+              {% if cat.id != 'all' %}
+                <option value="{{ cat.id }}">{{ cat.name }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="input-label">Generic Salt / Composition *</label>
+          <input type="text" name="salt" class="input-control" placeholder="e.g. Amoxicillin 500mg + Clavulanic Acid 125mg" required>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Manufacturer</label>
+          <input type="text" name="manufacturer" class="input-control" placeholder="e.g. GlaxoSmithKline">
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="input-label">Dosage Form</label>
+          <input type="text" name="dosage_form" class="input-control" placeholder="e.g. Tablet, Syrup, Capsule">
+        </div>
+        <div class="form-group">
+          <label class="input-label">Pack Size</label>
+          <input type="text" name="pack_size" class="input-control" placeholder="e.g. 10 tablets per strip">
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="input-label">MRP (Original Price &#8377;) *</label>
+          <input type="number" step="0.5" name="mrp" class="input-control" placeholder="e.g. 150" required>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Selling Price (Discounted &#8377;) *</label>
+          <input type="number" step="0.5" name="price" class="input-control" placeholder="e.g. 125" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="input-label">Indications &amp; Symptoms (Comma-separated for search)</label>
+        <input type="text" name="indications" class="input-control" placeholder="e.g. bacterial infection, fever, throat infection, tonsillitis">
+        <small class="muted-text" style="font-size: 11px;">When patients search these symptoms, this medicine will appear in results.</small>
+      </div>
+
+      <div class="form-row-2" style="align-items: center; margin-top: 6px;">
+        <div class="form-group">
+          <label class="input-label">Stock Quantity</label>
+          <input type="number" name="stock" class="input-control" value="100">
+        </div>
+        <div class="form-group" style="padding-top: 18px; display: flex; gap: 18px;">
+          <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer;">
+            <input type="checkbox" name="is_rx_required" value="1">
+            <span>Prescription Required (Rx)</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer;">
+            <input type="checkbox" name="is_bestseller" value="1">
+            <span>Mark Bestseller</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="admin-modal-footer">
+        <button type="button" class="button ghost small" onclick="closeAddModal()">Cancel</button>
+        <button type="submit" class="button primary small">+ Add Product to Catalog</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- =======================================================================
+     EDIT PRODUCT MODAL
+     ======================================================================= -->
+<div class="admin-modal-backdrop" id="editProductModal" style="display: none;" onclick="if(event.target === this) closeEditModal();">
+  <div class="admin-modal-dialog">
+    <div class="admin-modal-header">
+      <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: #151D22;">Edit Medicine Details</h3>
+      <button type="button" class="cart-drawer-close" onclick="closeEditModal()">&times;</button>
+    </div>
+    <form method="post" id="editProductForm" class="admin-modal-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="input-label">Product Name *</label>
+          <input type="text" id="edit_name" name="name" class="input-control" required>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Category *</label>
+          <select id="edit_category_id" name="category_id" class="input-control" required>
+            {% for cat in categories %}
+              {% if cat.id != 'all' %}
+                <option value="{{ cat.id }}">{{ cat.name }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="input-label">Generic Salt / Composition *</label>
+          <input type="text" id="edit_salt" name="salt" class="input-control" required>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Manufacturer</label>
+          <input type="text" id="edit_manufacturer" name="manufacturer" class="input-control">
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="input-label">Dosage Form</label>
+          <input type="text" id="edit_dosage_form" name="dosage_form" class="input-control">
+        </div>
+        <div class="form-group">
+          <label class="input-label">Pack Size</label>
+          <input type="text" id="edit_pack_size" name="pack_size" class="input-control">
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="input-label">MRP (&#8377;) *</label>
+          <input type="number" step="0.5" id="edit_mrp" name="mrp" class="input-control" required>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Selling Price (&#8377;) *</label>
+          <input type="number" step="0.5" id="edit_price" name="price" class="input-control" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="input-label">Indications &amp; Symptoms (Comma-separated)</label>
+        <input type="text" id="edit_indications" name="indications" class="input-control">
+      </div>
+
+      <div class="form-row-2" style="align-items: center; margin-top: 6px;">
+        <div class="form-group">
+          <label class="input-label">Stock</label>
+          <input type="number" id="edit_stock" name="stock" class="input-control">
+        </div>
+        <div class="form-group" style="padding-top: 18px; display: flex; gap: 18px;">
+          <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer;">
+            <input type="checkbox" id="edit_is_rx_required" name="is_rx_required" value="1">
+            <span>Prescription Required (Rx)</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer;">
+            <input type="checkbox" id="edit_is_bestseller" name="is_bestseller" value="1">
+            <span>Bestseller</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="admin-modal-footer">
+        <button type="button" class="button ghost small" onclick="closeEditModal()">Cancel</button>
+        <button type="submit" class="button primary small">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openAddModal() {
+    document.getElementById('addProductModal').style.display = 'flex';
+  }
+  function closeAddModal() {
+    document.getElementById('addProductModal').style.display = 'none';
+  }
+
+  function openEditModal(prod) {
+    const form = document.getElementById('editProductForm');
+    form.action = '/medications/admin/edit/' + prod.id;
+    document.getElementById('edit_name').value = prod.name || '';
+    document.getElementById('edit_category_id').value = prod.category_id || 'pain-fever';
+    document.getElementById('edit_salt').value = prod.salt || '';
+    document.getElementById('edit_manufacturer').value = prod.manufacturer || '';
+    document.getElementById('edit_dosage_form').value = prod.dosage_form || 'Tablet';
+    document.getElementById('edit_pack_size').value = prod.pack_size || '';
+    document.getElementById('edit_mrp').value = prod.mrp || 0;
+    document.getElementById('edit_price').value = prod.price || 0;
+    document.getElementById('edit_indications').value = (prod.indications || []).join(', ');
+    document.getElementById('edit_stock').value = prod.stock || 100;
+    document.getElementById('edit_is_rx_required').checked = !!prod.is_rx_required;
+    document.getElementById('edit_is_bestseller').checked = !!prod.is_bestseller;
+
+    document.getElementById('editProductModal').style.display = 'flex';
+  }
+  function closeEditModal() {
+    document.getElementById('editProductModal').style.display = 'none';
+  }
+</script>
+{% endblock %}

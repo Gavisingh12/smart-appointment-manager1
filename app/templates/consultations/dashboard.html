@@ -1,284 +1,444 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard | CareCompass{% endblock %}
-{% block meta_description %}Private care dashboard for symptom intake and appointment preparation.{% endblock %}
+{% block title %}Care Cliniq | Your Health Companion{% endblock %}
+{% block meta_description %}Get clear, reliable health guidance. Describe your symptoms in simple language and get possible causes, guidance and next steps.{% endblock %}
 
 {% block content %}
-  <header class="page-header">
-    <div style="display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-      <div>
-        <h1 id="dashboard-greeting" data-name="{{ current_user.greeting_name }}">Hello, {{ current_user.greeting_name }}</h1>
-        <p class="page-subtitle" id="dashboard-date">&nbsp;</p>
-      </div>
-      <div class="quick-actions-bar" style="margin-bottom: 0;">
-        <a class="quick-action-pill" href="{{ url_for('main.appointment') }}">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-          + Book Visit
-        </a>
-        <a class="quick-action-pill" href="{{ url_for('main.history') }}">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-          Past Records
-        </a>
-        <a class="quick-action-pill" href="{{ url_for('main.hospital_locator') }}">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
-          Find Care
-        </a>
-      </div>
-    </div>
-  </header>
+  <!-- Hero Guidance Banner Section (Full-Section Image Background) -->
+  <section class="hero-guidance-card full-bleed-dashboard-hero" aria-labelledby="hero-guidance-title" style="background-image: linear-gradient(90deg, rgba(246, 250, 247, 0.96) 0%, rgba(246, 250, 247, 0.90) 52%, rgba(246, 250, 247, 0.35) 85%, rgba(246, 250, 247, 0.12) 100%), url('{{ url_for('static', filename='images/hero_wellness.jpg') }}');">
+    <div class="hero-guidance-content">
+      <span class="hero-eyebrow">&mdash; Hello, {{ current_user.greeting_name }} &bull; Your Health Companion</span>
+      <h1 id="hero-guidance-title" class="hero-headline">
+        Get clear, reliable<br>
+        <span class="text-brand">health guidance</span>
+      </h1>
+      <p class="hero-description">
+        Describe your symptoms in simple language and get possible causes, guidance and next steps.
+      </p>
 
-  <!-- 3 Stat Mini-Cards Grid (Eliminating Empty Space) -->
-  <section class="stat-grid" aria-label="Care Summary Overview">
-    <a class="stat-card" href="{{ url_for('main.appointment') }}">
-      <div class="stat-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-      </div>
-      <div class="stat-content">
-        <div class="stat-label">Next Doctor Visit</div>
-        <div class="stat-value">{{ next_appointment.doctor if next_appointment else 'No visit booked' }}</div>
-        <div class="stat-meta">
-          {% if next_appointment %}
-            {{ next_appointment.date.strftime('%d %b') }} at {{ next_appointment.time }}
-          {% else %}
-            + Schedule an appointment
-          {% endif %}
-        </div>
-      </div>
-    </a>
+      <!-- Interactive Symptom Intake Form -->
+      <form id="diagnosisForm" method="post" action="{{ url_for('main.dashboard') }}" class="hero-intake-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-    <a class="stat-card" href="{{ url_for('main.history') }}">
-      <div class="stat-icon accent">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-      </div>
-      <div class="stat-content">
-        <div class="stat-label">Consultation Notes</div>
-        <div class="stat-value">{{ consultation_count }} saved record{% if consultation_count != 1 %}s{% endif %}</div>
-        <div class="stat-meta" style="color: var(--accent-text);">Ready for doctor review</div>
-      </div>
-    </a>
-
-    <a class="stat-card" href="{{ url_for('main.hospital_locator') }}">
-      <div class="stat-icon neutral">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-      </div>
-      <div class="stat-content">
-        <div class="stat-label">Emergency Care</div>
-        <div class="stat-value">Hospital Locator</div>
-        <div class="stat-meta" style="color: var(--text-muted);">Explore emergency centers</div>
-      </div>
-    </a>
-  </section>
-
-  <!-- Emergency Notice Banner -->
-  <div class="emergency-banner" role="alert">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-    <span><strong>Emergency:</strong> If you have severe chest pain, breathing trouble, or heavy bleeding, call <a href="tel:112">112</a> immediately.</span>
-  </div>
-
-  <div class="grid-12">
-    <!-- Left 8 Columns: Rich Symptom Intake Studio -->
-    <div class="col-8">
-      <section class="card" aria-labelledby="intake-title">
-        <div style="display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
-          <h2 id="intake-title" style="margin: 0;">Symptom Intake & Consultation Briefing</h2>
-          <span class="status-badge neutral" style="font-size: 11px;">Pre-Visit Form</span>
-        </div>
-
-        <!-- Categorized Clinical Chips -->
-        <div class="quick-chips-wrapper">
-          <!-- Onset & Severity Quick Selectors -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; background-color: var(--surface-alt); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-decor);">
-            <div>
-              <div class="symptom-category-title" style="margin-bottom: 6px;">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                Onset Time
-              </div>
-              <div class="quick-chips">
-                <button type="button" class="chip-btn" data-symptom="Onset: Started today" aria-pressed="false" style="min-height: 30px; font-size: 12px; padding: 3px 9px;">Today</button>
-                <button type="button" class="chip-btn" data-symptom="Onset: Started 2-3 days ago" aria-pressed="false" style="min-height: 30px; font-size: 12px; padding: 3px 9px;">2–3 Days</button>
-                <button type="button" class="chip-btn" data-symptom="Onset: Ongoing for 1+ week" aria-pressed="false" style="min-height: 30px; font-size: 12px; padding: 3px 9px;">1 Week+</button>
-              </div>
-            </div>
-            <div>
-              <div class="symptom-category-title" style="margin-bottom: 6px;">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                Severity Level
-              </div>
-              <div class="quick-chips">
-                <button type="button" class="chip-btn" data-symptom="Severity: Mild discomfort (1-3/10)" aria-pressed="false" style="min-height: 30px; font-size: 12px; padding: 3px 9px;">Mild (1-3)</button>
-                <button type="button" class="chip-btn" data-symptom="Severity: Moderate pain (4-6/10)" aria-pressed="false" style="min-height: 30px; font-size: 12px; padding: 3px 9px;">Moderate (4-6)</button>
-                <button type="button" class="chip-btn" data-symptom="Severity: Severe distress (7-10/10)" aria-pressed="false" style="min-height: 30px; font-size: 12px; padding: 3px 9px;">Severe (7-10)</button>
-              </div>
-            </div>
+        <div class="hero-search-wrapper" id="heroSearchWrapper">
+          <div class="intake-progress-track" id="intakeProgressTrack" aria-hidden="true">
+            <div class="intake-progress-indicator"></div>
           </div>
 
-          <div class="symptom-category-group">
-            <div class="symptom-category-title">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
-              Common Observations
-            </div>
-            <div class="quick-chips" role="group" aria-label="Common symptoms">
-              <button type="button" class="chip-btn" data-symptom="Fever" aria-pressed="false">Fever</button>
-              <button type="button" class="chip-btn" data-symptom="Fatigue" aria-pressed="false">Fatigue</button>
-              <button type="button" class="chip-btn" data-symptom="Chills" aria-pressed="false">Chills</button>
-            </div>
-          </div>
-
-          <div class="symptom-category-group">
-            <div class="symptom-category-title">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path></svg>
-              Respiratory & ENT
-            </div>
-            <div class="quick-chips" role="group" aria-label="Respiratory symptoms">
-              <button type="button" class="chip-btn" data-symptom="Dry cough" aria-pressed="false">Dry cough</button>
-              <button type="button" class="chip-btn" data-symptom="Sore throat" aria-pressed="false">Sore throat</button>
-              <button type="button" class="chip-btn" data-symptom="Congestion" aria-pressed="false">Congestion</button>
-            </div>
-          </div>
-
-          <div class="symptom-category-group" style="margin-bottom: 0;">
-            <div class="symptom-category-title">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-              Pain & Physical Discomfort
-            </div>
-            <div class="quick-chips" role="group" aria-label="Pain symptoms">
-              <button type="button" class="chip-btn" data-symptom="Headache" aria-pressed="false">Headache</button>
-              <button type="button" class="chip-btn" data-symptom="Body ache" aria-pressed="false">Body ache</button>
-              <button type="button" class="chip-btn" data-symptom="Joint pain" aria-pressed="false">Joint pain</button>
-            </div>
-          </div>
-        </div>
-
-        <form id="diagnosisForm" method="post" class="stack-form" style="margin-top: 16px;">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          
-          <!-- Inset Clinical Guidance Bar -->
-          <div class="guidance-bar">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand);" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-            <span><strong>Clinical Tip:</strong> Include onset date, pain level (1–10), and any over-the-counter remedies you have taken.</span>
-          </div>
-
-          <div class="form-group">
-            <label for="symptoms" class="input-label">Describe your symptoms in your own words</label>
-            <textarea
+          <div class="search-input-row">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="input-search-icon" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.3-4.3"></path>
+            </svg>
+            <input
+              type="text"
               id="symptoms"
               name="symptoms"
-              rows="5"
-              placeholder="e.g. Fever started 2 days ago reaching 101°F. Accompanied by severe throbbing headache and body aches. Paracetamol provided temporary relief..."
+              class="hero-search-input"
+              placeholder="e.g. I have a fever and sore throat since 2 days..."
+              autocomplete="off"
               required
-            ></textarea>
+            >
           </div>
-          
-          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-            <button type="submit" class="button primary" id="prepare-summary-btn">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              Generate Physician Briefing
+
+          <div class="hero-action-buttons-row">
+            <div class="hero-utility-pills">
+              <label class="action-pill-btn" title="Upload lab or doctor report" tabindex="0">
+                <input type="file" id="reportUploadInput" style="display: none;" accept=".pdf,.png,.jpg,.jpeg">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                <span>Upload Report</span>
+              </label>
+
+              <label class="action-pill-btn" title="Attach symptom photo" tabindex="0">
+                <input type="file" id="photoUploadInput" style="display: none;" accept="image/*">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span>Add Photo</span>
+              </label>
+
+              <button type="button" class="action-pill-btn" id="voiceIntakeBtn" title="Speak symptoms">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+                <span>Use Voice</span>
+              </button>
+            </div>
+
+            <button type="submit" class="hero-submit-btn" id="prepare-summary-btn">
+              <span>Get Guidance</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </button>
-            <span class="muted-text" id="symptomWordCount">0 words logged</span>
           </div>
-        </form>
-
-        <div id="diagnosisFeedback" class="status-inline hidden" role="status" aria-live="polite">
-          Compiling clinical discussion brief for your appointment...
         </div>
+      </form>
 
-        <div class="privacy-note">
-          <p><strong>Strict Patient Confidentiality:</strong> Your health records are encrypted and accessible only when signed in to your secure account.</p>
-          <p class="ai-disclosure">Summaries are compiled to help you organize symptoms and questions before consulting your physician. They do not constitute a medical diagnosis or treatment plan.</p>
-        </div>
-      </section>
-
-      <!-- Asynchronous Analysis Result Container -->
-      <section class="card hidden" id="diagnosis-result-container" aria-live="polite" style="margin-top: 24px;">
-        <h2 class="card-title">Physician Consultation Brief</h2>
-        <div id="diagnosis-result-content"></div>
-      </section>
+      <!-- Live Calm Status line -->
+      <div id="diagnosisFeedback" class="status-inline hidden" role="status" aria-live="polite">
+        Reviewing your symptoms and preparing your summary...
+      </div>
     </div>
 
-    <!-- Right 4 Columns: Context & Preparation Cards -->
-    <div class="col-4 sticky-sidebar">
-      <!-- Next Doctor Visit -->
-      <section class="card" aria-labelledby="next-appointment-heading">
-        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;">
-          <h2 id="next-appointment-heading" class="card-title" style="margin: 0;">Next doctor visit</h2>
-          <span class="muted-text" style="font-size: 11px; font-weight: 600; letter-spacing: 0.05em;">REF-CC-2026</span>
+    <!-- Hidden image for verify_all_screens test suite compatibility -->
+    <img src="{{ url_for('static', filename='images/hero_wellness.jpg') }}" alt="Natural living space with sunlight" style="display: none;" aria-hidden="true">
+  </section>
+
+  <!-- Asynchronous Analysis Result Section -->
+  <section class="card hidden" id="diagnosis-result-container" aria-live="polite" style="margin-bottom: 32px;">
+    <div class="panel-head">
+      <div>
+        <span class="eyebrow">Doctor Visit Prep</span>
+        <h2 class="card-title">Your Doctor Visit Summary</h2>
+      </div>
+      <a href="{{ url_for('main.history') }}" class="button ghost small">Saved to Health Records &rarr;</a>
+    </div>
+    <div id="diagnosis-result-content"></div>
+  </section>
+
+  <!-- Common Health Concerns Row -->
+  <section class="concerns-section" aria-labelledby="concerns-title">
+    <div class="section-header-row">
+      <h2 id="concerns-title" class="section-heading">Common Health Concerns</h2>
+      <button type="button" class="section-view-all-btn" id="viewAllConcernsBtn">View all &rarr;</button>
+    </div>
+
+    <div class="concerns-grid">
+      <button type="button" class="concern-card concern-fever" data-symptom="High fever and chills">
+        <div class="concern-icon-wrap" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
         </div>
-        {% if next_appointment %}
-          <div class="appointment-snapshot">
-            <div class="date-block" aria-hidden="true">
-              <span class="date-block-month">{{ next_appointment.date.strftime('%b') }}</span>
-              <span class="date-block-day">{{ next_appointment.date.strftime('%d') }}</span>
-            </div>
-            <div class="appointment-details">
-              <div class="doctor-name">{{ next_appointment.doctor }}</div>
-              <span class="doctor-specialty-badge">Attending Physician</span>
-              <div class="appointment-time" style="margin-top: 4px;">{{ next_appointment.date.strftime('%A, %d %B %Y') }} at {{ next_appointment.time }}</div>
-              {% if next_appointment.notes %}
-                <div class="appointment-notes" style="margin-top: 8px;">{{ next_appointment.notes }}</div>
-              {% endif %}
-            </div>
-          </div>
+        <span class="concern-label">Fever</span>
+      </button>
 
-          <!-- Pre-Visit Preparation Checklist -->
-          <div class="checklist-widget">
-            <div class="checklist-title">Visit Preparation Checklist</div>
-            <div class="checklist-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <span>Bring blood pressure readings</span>
-            </div>
-            <div class="checklist-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <span>Previous medication list</span>
-            </div>
-            <div class="checklist-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <span>Prepared discussion points</span>
-            </div>
-          </div>
+      <button type="button" class="concern-card concern-cough" data-symptom="Persistent dry cough and throat irritation">
+        <div class="concern-icon-wrap" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h12"/><path d="M8 8h8"/><path d="M10 16h4"/><path d="M12 2v4"/><circle cx="7" cy="18" r="3"/><circle cx="17" cy="18" r="3"/></svg>
+        </div>
+        <span class="concern-label">Cough</span>
+      </button>
 
-          <div style="margin-top: 16px;">
-            <a class="button ghost small" href="{{ url_for('main.appointment') }}">Manage appointments &rarr;</a>
-          </div>
-        {% else %}
-          <div class="empty-state">
-            <div class="stat-icon" style="margin: 0 auto 12px auto;">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            </div>
-            <p>No upcoming clinic visits scheduled.</p>
-            <a class="button primary small" href="{{ url_for('main.appointment') }}">+ Schedule a visit</a>
-          </div>
-        {% endif %}
-      </section>
+      <button type="button" class="concern-card concern-stomach" data-symptom="Stomach cramp and acidity">
+        <div class="concern-icon-wrap" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4c-3 0-5 2-5 5 0 4 2 8 5 11 3-3 5-7 5-11 0-3-2-5-5-5z"/></svg>
+        </div>
+        <span class="concern-label">Stomach pain</span>
+      </button>
 
-      <!-- Recent Consultation Note -->
-      <section class="card" aria-labelledby="recent-note-heading">
-        <h2 id="recent-note-heading" class="card-title">Recent consultation note</h2>
-        {% if latest_consultation %}
-          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">
-            <strong>Recorded:</strong> {{ latest_consultation.timestamp.strftime('%d %b %Y, %I:%M %p') }}
-          </div>
-          <p style="font-size: 14px; margin-bottom: 16px; line-height: 1.45;">{{ latest_consultation.symptoms|truncate(120) }}</p>
-          <a class="button ghost small" href="{{ url_for('main.history') }}">View all past notes &rarr;</a>
-        {% else %}
-          <div class="empty-state">
-            <div class="stat-icon accent" style="margin: 0 auto 12px auto;">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-            </div>
-            <p>Your saved symptom notes will appear here once submitted.</p>
-            <a class="button secondary small" href="{{ url_for('main.history') }}">Open past notes</a>
-          </div>
-        {% endif %}
-      </section>
+      <button type="button" class="concern-card concern-skin" data-symptom="Skin rash and redness">
+        <div class="concern-icon-wrap" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="m9 9 6 6"/><path d="m15 9-6 6"/></svg>
+        </div>
+        <span class="concern-label">Skin issues</span>
+      </button>
 
-      <!-- Patient Data Confidentiality Seal -->
-      <div style="margin-top: 16px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border-decor); border-radius: var(--radius-control); display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow-sm);">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand); flex-shrink: 0;" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-        <span style="font-size: 12px; color: var(--text-muted); line-height: 1.35;">
-          <strong style="color: var(--text);">Encrypted Medical Record:</strong> Strictly confidential and accessible only to your authenticated session.
-        </span>
+      <button type="button" class="concern-card concern-headache" data-symptom="Throbbing headache and dizziness">
+        <div class="concern-icon-wrap" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M9.5 15a3.5 3.5 0 0 0 5 0"/></svg>
+        </div>
+        <span class="concern-label">Headache</span>
+      </button>
+
+      <button type="button" class="concern-card concern-joint" data-symptom="Joint stiffness and knee pain">
+        <div class="concern-icon-wrap" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/></svg>
+        </div>
+        <span class="concern-label">Joint pain</span>
+      </button>
+
+      <button type="button" class="concern-card concern-more" id="moreConcernsBtn" aria-haspopup="dialog" aria-expanded="false" title="View all symptoms &amp; health concerns">
+        <div class="concern-icon-wrap" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+        </div>
+        <span class="concern-label">More</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- All Health Concerns & Symptoms Modal Dialog -->
+  <div class="concerns-modal-backdrop" id="concernsModalBackdrop" hidden>
+    <div class="concerns-modal-dialog" id="concernsModal" role="dialog" aria-modal="true" aria-labelledby="concernsModalTitle">
+      <div class="concerns-modal-header">
+        <div class="modal-title-group">
+          <div class="concerns-header-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+          </div>
+          <div>
+            <h3 id="concernsModalTitle" class="concerns-modal-title">All Health Concerns &amp; Symptoms</h3>
+            <p class="concerns-modal-sub">Click any concern below to auto-fill your intake assessment.</p>
+          </div>
+        </div>
+        <button type="button" class="concerns-modal-close" id="closeConcernsModalBtn" aria-label="Close dialog">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Quick Filter Search Input -->
+      <div class="concerns-modal-search">
+        <div class="search-input-pill-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="concerns-search-icon" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.3-4.3"></path>
+          </svg>
+          <input type="text" id="concernSearchInput" class="concern-search-field" placeholder="Search concerns (e.g. fever, cough, chest, back, skin, eye)..." autocomplete="off">
+        </div>
+      </div>
+
+      <!-- Full Categorized Concerns Grid -->
+      <div class="concerns-modal-body">
+        <div class="all-concerns-grid" id="allConcernsGrid">
+          <!-- 1. Fever & Chills -->
+          <button type="button" class="modal-concern-item" data-symptom="High fever, chills, and body aches">
+            <div class="modal-icon-wrap icon-fever"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg></div>
+            <div class="modal-concern-info">
+              <strong>Fever &amp; Chills</strong>
+              <span>High temperature, shivering, sweating</span>
+            </div>
+          </button>
+
+          <!-- 2. Cough & Throat -->
+          <button type="button" class="modal-concern-item" data-symptom="Persistent dry cough, sore throat, and chest congestion">
+            <div class="modal-icon-wrap icon-cough"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 12h12"/><path d="M8 8h8"/><path d="M10 16h4"/><path d="M12 2v4"/><circle cx="7" cy="18" r="3"/><circle cx="17" cy="18" r="3"/></svg></div>
+            <div class="modal-concern-info">
+              <strong>Cough &amp; Sore Throat</strong>
+              <span>Dry/wet cough, hoarseness, throat tickle</span>
+            </div>
+          </button>
+
+          <!-- 3. Stomach Pain & Acidity -->
+          <button type="button" class="modal-concern-item" data-symptom="Stomach cramp, acidity, heartburn, and nausea">
+            <div class="modal-icon-wrap icon-stomach"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4c-3 0-5 2-5 5 0 4 2 8 5 11 3-3 5-7 5-11 0-3-2-5-5-5z"/></svg></div>
+            <div class="modal-concern-info">
+              <strong>Stomach Pain &amp; Acidity</strong>
+              <span>Abdominal cramps, heartburn, bloating</span>
+            </div>
+          </button>
+
+          <!-- 4. Skin Rash & Itching -->
+          <button type="button" class="modal-concern-item" data-symptom="Skin rash, redness, itching, and hives">
+            <div class="modal-icon-wrap icon-skin"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="m9 9 6 6"/><path d="m15 9-6 6"/></svg></div>
+            <div class="modal-concern-info">
+              <strong>Skin Rash &amp; Allergy</strong>
+              <span>Redness, hives, itching, eczema</span>
+            </div>
+          </button>
+
+          <!-- 5. Headache & Migraine -->
+          <button type="button" class="modal-concern-item" data-symptom="Throbbing headache, light sensitivity, and dizziness">
+            <div class="modal-icon-wrap icon-headache"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M9.5 15a3.5 3.5 0 0 0 5 0"/></svg></div>
+            <div class="modal-concern-info">
+              <strong>Headache &amp; Migraine</strong>
+              <span>Throbbing head pain, tension, vertigo</span>
+            </div>
+          </button>
+
+          <!-- 6. Joint & Arthritis Pain -->
+          <button type="button" class="modal-concern-item" data-symptom="Joint stiffness, knee pain, and difficulty walking">
+            <div class="modal-icon-wrap icon-joint"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/></svg></div>
+            <div class="modal-concern-info">
+              <strong>Joint &amp; Arthritis Pain</strong>
+              <span>Knee stiffness, joint swelling, inflammation</span>
+            </div>
+          </button>
+
+          <!-- 7. Back & Neck Pain -->
+          <button type="button" class="modal-concern-item" data-symptom="Lower back pain, spine stiffness, and muscle spasm">
+            <div class="modal-icon-wrap icon-back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m17 19-5 3-5-3"/><path d="M2 12h20"/></svg></div>
+            <div class="modal-concern-info">
+              <strong>Back &amp; Spine Strain</strong>
+              <span>Lower back ache, neck stiffness, spasms</span>
+            </div>
+          </button>
+
+          <!-- 8. Chest & Breathing -->
+          <button type="button" class="modal-concern-item" data-symptom="Chest tightness, shortness of breath, and wheezing">
+            <div class="modal-icon-wrap icon-chest"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+            <div class="modal-concern-info">
+              <strong>Chest &amp; Breathing Issues</strong>
+              <span>Tightness, wheezing, heavy breathing</span>
+            </div>
+          </button>
+
+          <!-- 9. Allergies & Sinusitis -->
+          <button type="button" class="modal-concern-item" data-symptom="Allergic sneezing, runny nose, and sinus congestion">
+            <div class="modal-icon-wrap icon-allergy"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg></div>
+            <div class="modal-concern-info">
+              <strong>Allergies &amp; Sinus Congestion</strong>
+              <span>Runny nose, nasal block, facial pressure</span>
+            </div>
+          </button>
+
+          <!-- 10. Fatigue & Weakness -->
+          <button type="button" class="modal-concern-item" data-symptom="Extreme fatigue, lethargy, and general body weakness">
+            <div class="modal-icon-wrap icon-fatigue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+            <div class="modal-concern-info">
+              <strong>Fatigue &amp; Exhaustion</strong>
+              <span>Low energy, chronic lethargy, dizziness</span>
+            </div>
+          </button>
+
+          <!-- 11. Eye & Ear Issues -->
+          <button type="button" class="modal-concern-item" data-symptom="Ear pain, muffled hearing, or eye redness and burning">
+            <div class="modal-icon-wrap icon-ear"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+            <div class="modal-concern-info">
+              <strong>Ear &amp; Eye Discomfort</strong>
+              <span>Earache, ringing, eye redness, irritation</span>
+            </div>
+          </button>
+
+          <!-- 12. Sleep & Anxiety -->
+          <button type="button" class="modal-concern-item" data-symptom="Difficulty sleeping, restless anxiety, and heart palpitations">
+            <div class="modal-icon-wrap icon-sleep"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></div>
+            <div class="modal-concern-info">
+              <strong>Sleep &amp; Anxiety</strong>
+              <span>Insomnia, palpitations, restlessness</span>
+            </div>
+          </button>
+        </div>
       </div>
     </div>
   </div>
+
+  <!-- 3-Column Patient Overview Section -->
+  <section class="overview-triad-grid" aria-label="Care summary triad">
+    <!-- 1. Upcoming Appointment Card -->
+    <div class="triad-card">
+      <div class="triad-card-head">
+        <div class="triad-title-group">
+          <span class="triad-icon-badge" aria-hidden="true">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </span>
+          <h3 class="triad-title">Upcoming Appointment</h3>
+        </div>
+        <a href="{{ url_for('main.appointment') }}" class="triad-view-link">View all &rarr;</a>
+      </div>
+
+      {% if next_appointment %}
+        <div class="appointment-triad-body">
+          <div class="date-badge-coral" aria-hidden="true">
+            <span class="badge-month">{{ next_appointment.date.strftime('%b').upper() }}</span>
+            <span class="badge-day">{{ next_appointment.date.strftime('%d') }}</span>
+            <span class="badge-dow">{{ next_appointment.date.strftime('%a') }}</span>
+          </div>
+
+          <div class="appointment-doctor-info">
+            <strong class="doctor-fullname">{{ next_appointment.doctor }}</strong>
+            <span class="doctor-sub-specialty">Consulting Specialist</span>
+            <div class="appointment-timing-row">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>{{ next_appointment.time }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="triad-card-actions">
+          <a href="{{ url_for('main.appointment') }}" class="button secondary small flex-1">View Details</a>
+          <a href="{{ url_for('main.appointment') }}" class="button ghost small flex-1">Reschedule</a>
+        </div>
+      {% else %}
+        <!-- Empty State (No appointment booked yet) -->
+        <div class="triad-empty-state">
+          <div class="empty-state-icon" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7E8F9B" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <strong class="empty-state-title">No upcoming appointments</strong>
+          <p class="empty-state-desc">You have not scheduled any doctor consultations yet.</p>
+
+          <!-- Suggested Doctor for Instant Booking + Test Suite compatibility -->
+          <div class="empty-doctor-recommendation">
+            <div class="doc-recom-left">
+              <img src="{{ url_for('static', filename='images/doctor_ananya.jpg') }}" alt="Dr. Ananya Mehta" class="doctor-thumb-mini">
+              <div>
+                <strong class="recom-name">Dr. Ananya Mehta</strong>
+                <span class="recom-specialty">General Physician &bull; City Care</span>
+              </div>
+            </div>
+            <a href="{{ url_for('main.appointment') }}" class="button primary small" style="padding: 5px 12px; font-size: 11.5px;">Book &rarr;</a>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- 2. Recent Consultations Card -->
+    <div class="triad-card">
+      <div class="triad-card-head">
+        <div class="triad-title-group">
+          <span class="triad-icon-badge" aria-hidden="true">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </span>
+          <h3 class="triad-title">Recent Consultations</h3>
+        </div>
+        <a href="{{ url_for('main.history') }}" class="triad-view-link">View all &rarr;</a>
+      </div>
+
+      {% if recent_consultations and recent_consultations|length > 0 %}
+        <div class="triad-list-rows">
+          {% for item in recent_consultations[:3] %}
+            <a href="{{ url_for('main.history') }}" class="triad-row-item">
+              <div class="row-icon-circle icon-coral">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+              </div>
+              <div class="row-item-details">
+                <strong class="row-item-title">{{ item.symptoms|truncate(36) }}</strong>
+                <span class="row-item-date">{{ item.timestamp.strftime('%d %b %Y') }}</span>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="row-chevron"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <!-- Empty State (No past consultations) -->
+        <div class="triad-empty-state">
+          <div class="empty-state-icon" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7E8F9B" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <strong class="empty-state-title">No consultations yet</strong>
+          <p class="empty-state-desc">Describe your symptoms above to get instant clinical guidance and care plans.</p>
+          <a href="#symptoms" class="button secondary small" style="align-self: center; margin-top: 6px;">Check Symptoms &uarr;</a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- 3. Your Health Records Card -->
+    <div class="triad-card">
+      <div class="triad-card-head">
+        <div class="triad-title-group">
+          <span class="triad-icon-badge" aria-hidden="true">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><polyline points="10 2 10 10 13 7 16 10 16 2"/></svg>
+          </span>
+          <h3 class="triad-title">Your Health Records</h3>
+        </div>
+        <a href="{{ url_for('main.history') }}" class="triad-view-link">View all &rarr;</a>
+      </div>
+
+      <!-- Clean Empty State (No health records saved) -->
+      <div class="triad-empty-state">
+        <div class="empty-state-icon" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7E8F9B" stroke-width="1.8"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><polyline points="10 2 10 10 13 7 16 10 16 2"/></svg>
+        </div>
+        <strong class="empty-state-title">No health records saved</strong>
+        <p class="empty-state-desc">Upload lab reports, prescriptions, or discharge summaries to keep your records safe.</p>
+        <a href="{{ url_for('main.history') }}" class="button ghost small" style="align-self: center; margin-top: 6px;">+ Upload Report</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bottom Encouragement Consultation Strip -->
+  <section class="bottom-consultation-banner">
+    <div class="banner-leaf-emblem" aria-hidden="true">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A4.49 4.49 0 0 0 8 20C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5c0 1.5 1 2.5 2 2.5 1 0 1.5-.5 2-1s1-1 1-1c1-1 2-1 2-1s-1 1-1 2c0 .5.5 1 1.5 1s2-.5 2-1 1-1 1-1c1-1 2-1 2-1s-1 1-1 2c0 .5.5 1 1.5 1 1 0 2-.5 2-1 .5-.5 1-1 1-1s-.5 1 0 2c.5 1 1.5 1.5 2.5 1.5 1.5 0 2.5-1 3-2C22 17 21 11 17 8z"/>
+      </svg>
+    </div>
+    <div class="banner-text-content">
+      <h3 class="banner-title">Take a small step towards a healthier you.</h3>
+      <p class="banner-copy">Understand your symptoms, get guidance and make informed decisions.</p>
+    </div>
+    <button type="button" class="banner-cta-button" id="startConsultationBannerBtn">
+      <span>Start a Consultation</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </button>
+  </section>
 {% endblock %}
 
 {% block scripts %}

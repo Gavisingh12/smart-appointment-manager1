@@ -1,11 +1,11 @@
 {
-  "name": "CareCompass AI",
-  "short_name": "CareCompass",
-  "description": "Medical support dashboard for symptom intake, reports, appointments, and hospital discovery.",
+  "name": "Care Cliniq",
+  "short_name": "Care Cliniq",
+  "description": "Your smart health companion for clear doctor visit summaries, hospital discovery, and medications.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#07131d",
-  "theme_color": "#07131d",
+  "background_color": "#0B3822",
+  "theme_color": "#135234",
   "icons": [
     {
       "src": "/static/brand/favicon.svg",

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Email Code | {{ app_name }}{% endblock %}
+{% block meta_description %}Enter your 6-digit verification code to access your Care Cliniq health portal.{% endblock %}
+
+{% block content %}
+<div class="auth-page-wrapper">
+  <section class="auth-shell narrow" style="max-width: 500px; margin: 0 auto;">
+    <div class="auth-premium-card" style="padding: 38px 32px;">
+      
+      <!-- Top Icon Badge -->
+      <div style="text-align: center; margin-bottom: 22px;">
+        <div style="width: 58px; height: 58px; border-radius: 16px; background: #EAF4EE; color: #135234; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px; box-shadow: 0 4px 12px rgba(19, 82, 52, 0.1);">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+        </div>
+        <h1 style="font-size: 23px; font-weight: 700; color: #151D22; margin: 0 0 6px 0; letter-spacing: -0.015em;">
+          Check your email
+        </h1>
+        <p style="font-size: 14px; color: #5C6B75; margin: 0; line-height: 1.5;">
+          We sent a 6-digit verification code to<br>
+          <strong style="color: #151D22;">{{ email }}</strong>
+          <a href="{{ url_for('auth.login') }}" style="font-size: 12.5px; color: #135234; text-decoration: none; font-weight: 600; margin-left: 6px;">(Edit)</a>
+        </p>
+      </div>
+
+      {% if dev_code %}
+        <!-- Local Development Helper Notice -->
+        <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 10px; padding: 10px 14px; margin-bottom: 20px; font-size: 12.5px; color: #166534; display: flex; align-items: center; justify-content: space-between;">
+          <span><strong>Preview Code:</strong> <code style="font-size: 15px; font-weight: 700; background: #DCFCE7; padding: 2px 6px; border-radius: 4px;">{{ dev_code }}</code></span>
+          <button type="button" onclick="document.getElementById('otpCodeInput').value='{{ dev_code }}';document.getElementById('verifyOtpForm').submit();" style="background: #166534; color: #fff; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11.5px; cursor: pointer; font-weight: 600;">
+            Auto-fill &rarr;
+          </button>
+        </div>
+      {% endif %}
+
+      <!-- Verification Code Form -->
+      <form method="post" action="{{ url_for('auth.verify_otp') }}" class="stack-form" id="verifyOtpForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="email" value="{{ email }}">
+
+        <div class="form-group" style="text-align: center; margin-bottom: 22px;">
+          <label for="otpCodeInput" style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #5C6B75; margin-bottom: 12px;">
+            Enter 6-Digit Code
+          </label>
+          <input
+            type="text"
+            id="otpCodeInput"
+            name="otp_code"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            maxlength="6"
+            autocomplete="one-time-code"
+            placeholder="&bull; &bull; &bull; &bull; &bull; &bull;"
+            style="width: 100%; height: 56px; font-size: 28px; font-weight: 800; letter-spacing: 0.35em; text-align: center; border: 2px solid #C8E2D1; border-radius: 14px; color: #135234; background: #FAFCFA; box-sizing: border-box; outline: none; transition: all 0.2s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);"
+            onfocus="this.style.borderColor='#135234'; this.style.boxShadow='0 0 0 3px rgba(19, 82, 52, 0.12)';"
+            onblur="this.style.borderColor='#C8E2D1'; this.style.boxShadow='none';"
+            autofocus
+            required
+          >
+        </div>
+
+        <button type="submit" class="btn-auth-primary">
+          <span>Verify &amp; Continue</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </form>
+
+      <!-- Resend Code Row -->
+      <div style="margin-top: 24px; text-align: center; font-size: 13px; color: #64748B;">
+        <span>Didn't receive the email? </span>
+        <form method="post" action="{{ url_for('auth.send_otp') }}" style="display: inline;" id="resendForm">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="email" value="{{ email }}">
+          <input type="hidden" name="purpose" value="{{ purpose }}">
+          <button type="submit" id="resendBtn" style="background: none; border: none; color: #135234; font-weight: 700; cursor: pointer; text-decoration: underline; padding: 0; font-size: 13px;">
+            Resend code
+          </button>
+        </form>
+      </div>
+
+      <div style="margin-top: 20px; text-align: center; border-top: 1px solid #EAEFEA; padding-top: 16px;">
+        <a href="{{ url_for('auth.login') }}" style="font-size: 13px; color: #64748B; text-decoration: none; font-weight: 600;">
+          &larr; Back to sign in
+        </a>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<script>
+  // Auto-submit form when 6 digits are typed
+  const otpInput = document.getElementById('otpCodeInput');
+  if (otpInput) {
+    otpInput.addEventListener('input', function(e) {
+      this.value = this.value.replace(/[^0-9]/g, '');
+      if (this.value.length === 6) {
+        document.getElementById('verifyOtpForm').submit();
+      }
+    });
+  }
+</script>
+{% endblock %}

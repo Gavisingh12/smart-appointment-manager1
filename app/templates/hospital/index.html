@@ -1,92 +1,732 @@
 {% extends "base.html" %}
 
-{% block title %}Find Hospital | CareCompass{% endblock %}
-{% block meta_description %}Search and explore nearby hospitals, clinics, and emergency centers by city.{% endblock %}
+{% block title %}Find Doctors &amp; Healthcare Centers | Care Cliniq{% endblock %}
+{% block meta_description %}Quickly find trusted doctors, hospitals, clinics and 24/7 emergency centers near you with distances and directions.{% endblock %}
 
 {% block content %}
-  <header class="page-header">
-    <h1>Accredited Medical Centers & Emergency Units</h1>
-    <p class="page-subtitle">Locate verified hospitals, 24/7 trauma departments, and regional clinical centers by metropolitan area.</p>
-  </header>
+{% if not current_user.is_authenticated %}
+  <!-- =======================================================================
+       INFORMATORY FEATURE SHOWCASE FOR GUESTS / PUBLIC VISITORS
+       ======================================================================= -->
+  <div class="informatory-feature-page" id="hospitalShowcasePage">
+    <!-- Hero Header -->
+    <header class="informatory-hero-box">
+      <div class="informatory-eyebrow-pill">
+        <span class="pill-dot" aria-hidden="true"></span>
+        <span class="pill-text">Hospital &amp; Clinic Finder</span>
+      </div>
+      <h1 class="informatory-hero-title">
+        Find Good Doctors and Hospitals Near You.
+      </h1>
+      <p class="informatory-hero-desc">
+        Find trusted hospitals, clinics, and 24/7 emergency medical centers in Jaipur, Delhi, Mumbai, and other cities. See distances, ratings, and book your visit without waiting on phone calls.
+      </p>
 
-  <!-- City Search Card with Quick City Suggestion Pills -->
-  <section class="card locator-search-card" aria-labelledby="locator-search-heading">
-    <h2 id="locator-search-heading" class="card-title">Search Hospital & Emergency Facilities</h2>
-    <form method="get" class="locator-search-form" action="{{ url_for('main.hospital_locator') }}">
-      <label for="city-input" class="sr-only" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;">City name</label>
-      <input type="text" id="city-input" name="city" value="{{ city }}" placeholder="Enter city or district (e.g. London, Mumbai, New York, Delhi)" required>
-      <button type="submit" class="button primary">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        Locate Facilities
-      </button>
+      <div class="informatory-hero-cta">
+        <a class="button primary" href="{{ url_for('auth.register') }}" style="padding: 13px 28px; font-size: 15px;">Get Started Free</a>
+        <a class="button secondary" href="{{ url_for('auth.login', next=url_for('main.hospital_locator')) }}" style="padding: 13px 24px; font-size: 15px;">Sign In to Find Doctors</a>
+      </div>
+
+      <div class="informatory-trust-badges">
+        <span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          Verified Doctors &amp; Clinics
+        </span>
+        <span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" x2="9" y1="3" y2="18"/><line x1="15" x2="15" y1="6" y2="21"/></svg>
+          Exact Distance &amp; Directions
+        </span>
+        <span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Calendar Reminders
+        </span>
+        <span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          24/7 Emergency Rooms
+        </span>
+      </div>
+    </header>
+
+    <!-- Visual App Screenshot Preview (Mockup Frame) -->
+    <div class="browser-mockup-frame" aria-label="Hospital Locator Interface Preview">
+      <div class="browser-mockup-header">
+        <div class="mockup-dots" aria-hidden="true">
+          <span class="mockup-dot red"></span>
+          <span class="mockup-dot yellow"></span>
+          <span class="mockup-dot green"></span>
+        </div>
+        <div class="mockup-address-bar">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span>carecliniq.local/hospital-locator</span>
+        </div>
+        <span class="mockup-badge">Live Preview</span>
+      </div>
+      <div class="mockup-screen-container">
+        <img src="{{ url_for('static', filename='images/hospital_locator_preview.png') }}" 
+             alt="Care Cliniq Hospital &amp; Doctor Finder UI Preview" 
+             class="app-screenshot-img"
+             loading="eager">
+        <div class="screenshot-floating-caption">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" x2="9" y1="3" y2="18"/><line x1="15" x2="15" y1="6" y2="21"/></svg>
+          <span>Inside the App: See doctors near you, check open hours, and get driving directions instantly</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 Key Capabilities -->
+    <section style="margin: 40px 0;">
+      <div style="text-align: center; max-width: 650px; margin: 0 auto 30px auto;">
+        <span class="eyebrow" style="color: var(--brand); font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; display: inline-block; margin-bottom: 6px;">WHAT YOU CAN DO</span>
+        <h2 style="font-size: 26px; color: var(--text); margin: 0 0 8px 0; font-family: var(--font-serif, serif);">Find trusted healthcare without the confusion</h2>
+        <p style="font-size: 14px; color: var(--text-muted); line-height: 1.55; margin: 0;">Everything you need to find the right doctor and clinic when you need medical attention.</p>
+      </div>
+
+      <div class="informatory-features-grid">
+        <article class="informatory-feature-card">
+          <div class="informatory-feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 9h6"/><path d="M12 6v6"/></svg>
+          </div>
+          <span class="informatory-card-step">Feature 01</span>
+          <h3 class="informatory-feature-title">24/7 Emergency Care</h3>
+          <p class="informatory-feature-desc">Quickly see which hospitals are open right now with emergency rooms, ICUs, and ambulance help for urgent needs.</p>
+        </article>
+
+        <article class="informatory-feature-card">
+          <div class="informatory-feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a6 6 0 0 1 12 0v2"/></svg>
+          </div>
+          <span class="informatory-card-step">Feature 02</span>
+          <h3 class="informatory-feature-title">Specialist Doctors</h3>
+          <p class="informatory-feature-desc">Find family doctors, heart doctors, bone specialists, and child specialists with real patient ratings and consulting times.</p>
+        </article>
+
+        <article class="informatory-feature-card">
+          <div class="informatory-feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+          </div>
+          <span class="informatory-card-step">Feature 03</span>
+          <h3 class="informatory-feature-title">Distance &amp; Directions</h3>
+          <p class="informatory-feature-desc">See exactly how many kilometers away each clinic is from your home, and tap to open Google Maps directions.</p>
+        </article>
+
+        <article class="informatory-feature-card">
+          <div class="informatory-feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <span class="informatory-card-step">Feature 04</span>
+          <h3 class="informatory-feature-title">Simple Online Booking</h3>
+          <p class="informatory-feature-desc">Book your visit online in a few clicks without waiting on calls, and save the appointment directly to your phone.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- 3-Step Guided Timeline -->
+    <section class="trust-strip" style="margin: 30px 0; padding: 36px 0; border-top: 1px solid var(--border-decor); border-bottom: 1px solid var(--border-decor);">
+      <article class="trust-card">
+        <span style="font-size: 11.5px; font-weight: 700; color: var(--brand); background: var(--brand-tint); padding: 3px 8px; border-radius: var(--radius-pill); display: inline-block; margin-bottom: 10px;">Step 01</span>
+        <strong style="font-size: 17px; color: var(--text); display: block; margin-bottom: 6px;">Search Your Problem or City</strong>
+        <p style="font-size: 13.5px; color: var(--text-muted); line-height: 1.5; margin: 0;">Type what you need (e.g. fever, heart, child clinic) or choose from cities like Jaipur, Delhi, and Mumbai.</p>
+      </article>
+      <article class="trust-card">
+        <span style="font-size: 11.5px; font-weight: 700; color: var(--brand); background: var(--brand-tint); padding: 3px 8px; border-radius: var(--radius-pill); display: inline-block; margin-bottom: 10px;">Step 02</span>
+        <strong style="font-size: 17px; color: var(--text); display: block; margin-bottom: 6px;">Check Distance &amp; Ratings</strong>
+        <p style="font-size: 13.5px; color: var(--text-muted); line-height: 1.5; margin: 0;">See clinic distances, patient reviews, and check if emergency rooms are open right now.</p>
+      </article>
+      <article class="trust-card">
+        <span style="font-size: 11.5px; font-weight: 700; color: var(--brand); background: var(--brand-tint); padding: 3px 8px; border-radius: var(--radius-pill); display: inline-block; margin-bottom: 10px;">Step 03</span>
+        <strong style="font-size: 17px; color: var(--text); display: block; margin-bottom: 6px;">Book Your Visit</strong>
+        <p style="font-size: 13.5px; color: var(--text-muted); line-height: 1.5; margin: 0;">Pick your slot online and get driving directions right to the clinic door.</p>
+      </article>
+    </section>
+
+    <!-- Bottom CTA Banner -->
+    <section class="informatory-cta-banner">
+      <span class="eyebrow" style="margin-bottom: 8px; display: inline-block;">NEED TO VISIT A DOCTOR?</span>
+      <h2 style="font-size: 26px; margin: 0 0 10px 0; color: var(--text); font-family: var(--font-serif); letter-spacing: -0.02em;">Find trusted healthcare in seconds.</h2>
+      <p style="max-width: 540px; margin: 0 auto 22px auto; color: var(--text-muted); font-size: 14.5px; line-height: 1.6;">
+        Create a free account to book clinic visits, check doctor timings, and get instant directions.
+      </p>
+      <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
+        <a class="button primary" href="{{ url_for('auth.register') }}" style="padding: 12px 28px; font-size: 14.5px;">Get Started Free</a>
+        <a class="button secondary" href="{{ url_for('auth.login', next=url_for('main.hospital_locator')) }}" style="padding: 12px 22px; font-size: 14.5px;">Sign In to Your Account</a>
+      </div>
+    </section>
+  </div>
+
+{% else %}
+  <!-- =======================================================================
+       FULL INTERACTIVE FACILITY LOCATOR (FOR LOGGED-IN USERS)
+       ======================================================================= -->
+  <div class="finder-page-container">
+    <header class="finder-header">
+      <h1 class="finder-title">Find Doctors &amp; Healthcare Centers</h1>
+      <p class="finder-subtitle">Search and book appointments with verified doctors, hospitals, clinics and more. Find trusted care near you.</p>
+    </header>
+
+    <!-- Unified Search Bar with Pan-India Location Support -->
+    <form method="get" action="{{ url_for('main.hospital_locator') }}" class="finder-search-bar" id="locatorMainForm">
+      <div class="finder-search-input-group">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="finder-search-icon" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" name="q" id="facilitySearchInput" value="{{ q or '' }}" placeholder="Search doctor, hospital, clinic, or specialty (e.g. Cardiologist, Dental)..." class="finder-search-input" aria-label="Search doctor or healthcare center">
+      </div>
+
+      <input type="hidden" name="category" id="hiddenCategory" value="{{ category or 'all' }}">
+      <input type="hidden" name="sort" id="hiddenSort" value="{{ sort or 'relevance' }}">
+      <div class="finder-search-divider" aria-hidden="true"></div>
+
+      <!-- Location Input with Dynamic India Geocoding & Autocomplete -->
+      <div class="finder-location-input-wrapper" style="position: relative; display: flex; align-items: center; flex: 1.2; min-width: 220px; padding: 0 8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.2" class="finder-location-icon" aria-hidden="true" style="margin-right: 6px; flex-shrink: 0;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <input type="text"
+               name="location"
+               id="locationSearchInput"
+               value="{{ location or city or 'Jaipur' }}"
+               placeholder="City, town, village, or road in India..."
+               class="finder-location-text-input"
+               autocomplete="off"
+               aria-label="Search city, town, village or road"
+               style="border: none; background: transparent; outline: none; font-size: 14px; font-weight: 500; color: #151D22; width: 100%;">
+
+        <!-- Locate Me GPS Button -->
+        <button type="button" class="btn-locate-gps" id="locateMeBtn" title="Use current GPS location" onclick="detectUserLocation()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M2 12h2"/><path d="M20 12h2"/></svg>
+          <span>Near Me</span>
+        </button>
+
+        <!-- Autocomplete Suggestions Dropdown -->
+        <div class="location-autocomplete-menu" id="locationSuggestDropdown"></div>
+      </div>
+
+      <button type="submit" class="finder-search-submit">Search Care</button>
     </form>
 
-    <div style="display: flex; align-items: center; gap: 8px; margin-top: 14px; flex-wrap: wrap;">
-      <span class="muted-text" style="font-size: 12.5px;">Frequent Medical Hubs:</span>
-      <a class="chip-btn" style="min-height: 32px; padding: 4px 10px; font-size: 12px; text-decoration: none;" href="{{ url_for('main.hospital_locator', city='London') }}">London</a>
-      <a class="chip-btn" style="min-height: 32px; padding: 4px 10px; font-size: 12px; text-decoration: none;" href="{{ url_for('main.hospital_locator', city='Mumbai') }}">Mumbai</a>
-      <a class="chip-btn" style="min-height: 32px; padding: 4px 10px; font-size: 12px; text-decoration: none;" href="{{ url_for('main.hospital_locator', city='New York') }}">New York</a>
-      <a class="chip-btn" style="min-height: 32px; padding: 4px 10px; font-size: 12px; text-decoration: none;" href="{{ url_for('main.hospital_locator', city='Delhi') }}">Delhi</a>
+    <!-- Quick Location Chips -->
+    <div class="quick-location-chips-row">
+      <span class="chips-label">Popular Locations:</span>
+      <div class="chips-scroll">
+        <button type="button" class="loc-chip-btn" onclick="selectQuickLocation('Sitapur, Uttar Pradesh')">Sitapur (UP)</button>
+        <button type="button" class="loc-chip-btn" onclick="selectQuickLocation('Alwar, Rajasthan')">Alwar</button>
+        <button type="button" class="loc-chip-btn" onclick="selectQuickLocation('Jaipur, Rajasthan')">Jaipur</button>
+        <button type="button" class="loc-chip-btn" onclick="selectQuickLocation('Khatushyamji, Rajasthan')">Khatushyamji</button>
+        <button type="button" class="loc-chip-btn" onclick="selectQuickLocation('New Delhi, Delhi NCR')">New Delhi</button>
+        <button type="button" class="loc-chip-btn" onclick="selectQuickLocation('Patna, Bihar')">Patna</button>
+        <button type="button" class="loc-chip-btn" onclick="selectQuickLocation('Varanasi, Uttar Pradesh')">Varanasi</button>
+        <button type="button" class="loc-chip-btn" onclick="selectQuickLocation('Ludhiana, Punjab')">Ludhiana</button>
+        <button type="button" class="loc-chip-btn" onclick="selectQuickLocation('Bengaluru, Karnataka')">Bengaluru</button>
+        <button type="button" class="loc-chip-btn" onclick="selectQuickLocation('Mumbai, Maharashtra')">Mumbai</button>
+      </div>
     </div>
-  </section>
 
-  {% if hospital_cards %}
-    <div class="hospital-grid">
-      <!-- Left 5 Columns: Hospital Cards List -->
-      <section class="hospital-list" aria-label="Search results for {{ city }}">
-        {% for hospital in hospital_cards %}
-          <article class="hospital-item">
-            <div class="hospital-item-header">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span class="date-block-month" style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: var(--surface-alt); border: 1px solid var(--border-decor); color: var(--text-muted); font-weight: 700;">#{{ loop.index }}</span>
-                <h3 class="hospital-item-title">{{ hospital.name }}</h3>
+    <!-- Category Filter Pills (Row 1) -->
+    <nav class="finder-category-pills" aria-label="Care categories">
+      <a href="{{ url_for('main.hospital_locator', location=(location or city), category='all', q=q, sort=sort) }}" class="finder-cat-pill {% if not category or category == 'all' %}active{% endif %}" data-cat="all">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+        <span>All Care</span>
+      </a>
+      <a href="{{ url_for('main.hospital_locator', location=(location or city), category='hospital', q=q, sort=sort) }}" class="finder-cat-pill {% if category == 'hospital' %}active{% endif %}" data-cat="hospital">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 9h6"/><path d="M12 6v6"/></svg>
+        <span>Hospitals</span>
+      </a>
+      <a href="{{ url_for('main.hospital_locator', location=(location or city), category='clinic', q=q, sort=sort) }}" class="finder-cat-pill {% if category == 'clinic' %}active{% endif %}" data-cat="clinic">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+        <span>Clinics &amp; Consultations</span>
+      </a>
+      <a href="{{ url_for('main.hospital_locator', location=(location or city), category='specialist', q=q, sort=sort) }}" class="finder-cat-pill {% if category == 'specialist' %}active{% endif %}" data-cat="specialist">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a6 6 0 0 1 12 0v2"/></svg>
+        <span>Specialist Doctors</span>
+      </a>
+      <a href="{{ url_for('main.hospital_locator', location=(location or city), category='diagnostic', q=q, sort=sort) }}" class="finder-cat-pill {% if category == 'diagnostic' %}active{% endif %}" data-cat="diagnostic">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2v7.31L4.62 19.3A2 2 0 0 0 6.38 22h11.24a2 2 0 0 0 1.76-2.7L14 9.31V2"/><path d="M8.5 2h7"/></svg>
+        <span>Diagnostic Centers</span>
+      </a>
+      <a href="{{ url_for('main.hospital_locator', location=(location or city), category='pharmacy', q=q, sort=sort) }}" class="finder-cat-pill {% if category == 'pharmacy' %}active{% endif %}" data-cat="pharmacy">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+        <span>Pharmacies</span>
+      </a>
+    </nav>
+
+    <!-- Secondary Filter Bar -->
+    <div class="finder-secondary-bar">
+      <div class="finder-filters-left">
+        <select id="distanceFilter" class="finder-filter-select" aria-label="Filter by distance" onchange="applyClientFilters()">
+          <option value="any">Distance</option>
+          <option value="2">Within 2 km</option>
+          <option value="5">Within 5 km</option>
+          <option value="10">Within 10 km</option>
+        </select>
+        <button type="button" class="finder-filter-btn" id="openNowBtn" onclick="toggleOpenNow()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+          <span>Open Now</span>
+        </button>
+        <select id="specialtyFilter" class="finder-filter-select" aria-label="Filter by specialty" onchange="applyClientFilters()">
+          <option value="all">Specialty</option>
+          <option value="cardiology">Cardiology</option>
+          <option value="orthopedics">Orthopedics</option>
+          <option value="pediatrics">Pediatrics</option>
+          <option value="general">General Medicine</option>
+          <option value="dermatology">Dermatology</option>
+        </select>
+        <select id="ratingFilter" class="finder-filter-select" aria-label="Filter by rating" onchange="applyClientFilters()">
+          <option value="all">Rating</option>
+          <option value="4.8">⭐ 4.8 &amp; above</option>
+          <option value="4.5">⭐ 4.5 &amp; above</option>
+          <option value="4.0">⭐ 4.0 &amp; above</option>
+        </select>
+        <button type="button" class="finder-filter-btn" onclick="applyClientFilters()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+          <span>Insurance</span>
+        </button>
+        <button type="button" class="finder-filter-btn" onclick="applyClientFilters()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" x2="20" y1="21" y2="21"/><line x1="4" x2="20" y1="14" y2="14"/><line x1="4" x2="20" y1="7" y2="7"/></svg>
+          <span>More Filters</span>
+        </button>
+      </div>
+
+      <div class="finder-sort-right">
+        <select id="sortSelect" class="finder-filter-select" aria-label="Sort facilities" onchange="updateSort(this.value)">
+          <option value="relevance" {% if sort == 'relevance' %}selected{% endif %}>Sort by: Relevance</option>
+          <option value="distance" {% if sort == 'distance' %}selected{% endif %}>Distance: Nearest first</option>
+          <option value="rating" {% if sort == 'rating' %}selected{% endif %}>Rating: Highest first</option>
+          <option value="reviews" {% if sort == 'reviews' %}selected{% endif %}>Popular: Most reviewed</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Results Count Bar -->
+    <div class="finder-results-bar">
+      <div class="finder-results-count">
+        <span id="displayedCount">{{ hospital_cards|length }}</span> healthcare providers near <span class="highlight-city">{{ city_display or city }}</span>
+      </div>
+      <div class="finder-view-toggle">
+        <button type="button" class="finder-toggle-btn active" id="viewMapBtn" onclick="switchView('map')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" x2="9" y1="3" y2="18"/><line x1="15" x2="15" y1="6" y2="21"/></svg>
+          <span>Map View</span>
+        </button>
+        <button type="button" class="finder-toggle-btn" id="viewListBtn" onclick="switchView('list')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+          <span>List View</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Split View: Cards List + Folium Map -->
+    <div class="finder-split-view" id="splitViewContainer">
+      <div class="finder-cards-list" id="facilitiesCardsList" role="region" aria-label="Healthcare providers list">
+        {% if hospital_cards %}
+          {% for hospital in hospital_cards %}
+            <article class="finder-card" 
+                     data-type="{{ hospital.type }}" 
+                     data-name="{{ hospital.name|lower }}" 
+                     data-dist="{{ hospital.distance_km }}" 
+                     data-rating="{{ hospital.rating }}" 
+                     data-open247="{{ 'true' if hospital.is_24_7 else 'false' }}"
+                     data-text="{{ hospital.name|lower }} {{ hospital.specialty|lower }} {{ hospital.address|lower }} {{ hospital.badges|join(' ')|lower }}">
+              <div class="finder-card-thumb-wrap">
+                <img src="{{ url_for('static', filename=hospital.image) }}" 
+                     alt="{{ hospital.name }}" 
+                     class="finder-card-thumb" 
+                     loading="lazy"
+                     onerror="this.src='{{ url_for('static', filename='images/facility_hospital1.jpg') }}'">
               </div>
-              {% if hospital.distance %}
-                <span class="hospital-item-distance">{{ hospital.distance }}</span>
-              {% endif %}
-            </div>
-            <div class="hospital-item-type">{{ hospital.type }}</div>
-            <div class="hospital-item-hours">
-              {% if '24/7' in hospital.hours %}
-                <span class="live-dot"></span>
-              {% else %}
-                <span class="live-dot warning"></span>
-              {% endif %}
-              {{ hospital.hours }}
-            </div>
-            <div style="margin-top: 10px;">
-              <a class="button secondary small" href="https://www.google.com/maps/search/?api=1&query={{ hospital.coords[0] }},{{ hospital.coords[1] }}" target="_blank" rel="noopener noreferrer">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;" aria-hidden="true"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-                Directions in Maps
-              </a>
-            </div>
-          </article>
-        {% endfor %}
-      </section>
 
-      <!-- Right 7 Columns: Interactive Map View -->
-      <section class="map-container-frame" aria-label="Interactive map view of care centers">
-        {% if map_html %}
-          {{ map_html|safe }}
+              <div class="finder-card-content">
+                <div class="finder-card-header">
+                  <div class="finder-card-title-group">
+                    <h2 class="finder-card-name">{{ hospital.name }}</h2>
+                    <span class="finder-verified-badge" title="Verified Healthcare Provider">&#10003;</span>
+                  </div>
+                  {% if hospital.is_24_7 %}
+                    <span class="finder-status-tag open-247 badge-open-247">
+                      <span class="finder-status-dot"></span>
+                      Open 24/7
+                    </span>
+                  {% else %}
+                    <span class="finder-status-tag open-hours">
+                      <span class="finder-status-dot"></span>
+                      {{ hospital.hours }}
+                    </span>
+                  {% endif %}
+                </div>
+
+                <div class="finder-card-specialty">{{ hospital.specialty }}</div>
+
+                <div class="finder-card-meta">
+                  <span class="finder-card-rating">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="#D97706" stroke="#D97706" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    {{ hospital.rating }} ({{ hospital.reviews_count }} reviews)
+                  </span>
+                  <span class="finder-card-distance">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    {{ hospital.distance }}
+                  </span>
+                </div>
+
+                <div class="finder-card-address" title="{{ hospital.address }}">{{ hospital.address }}</div>
+
+                <div class="finder-card-badges">
+                  {% for badge in hospital.badges %}
+                    <span class="finder-badge-pill {% if 'emergency' in badge|lower or 'trauma' in badge|lower %}emergency{% elif 'icu' in badge|lower %}icu{% endif %}">
+                      {{ badge }}
+                    </span>
+                  {% endfor %}
+                </div>
+
+                <div class="finder-card-actions">
+                  <a href="{{ url_for('main.appointment') }}?doctor={{ hospital.name|urlencode }}" class="finder-btn-book">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span>Book Appointment</span>
+                  </a>
+
+                  <a href="https://www.google.com/maps/search/?api=1&query={{ hospital.coords[0] }},{{ hospital.coords[1] }}" target="_blank" rel="noopener noreferrer" class="finder-btn-action" title="View location on Google Maps">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                    <span>Directions</span>
+                  </a>
+
+                  {% if hospital.phone %}
+                    <a href="tel:{{ hospital.phone }}" class="finder-btn-action" title="Call healthcare center directly">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                      <span>Call</span>
+                    </a>
+                  {% endif %}
+                </div>
+              </div>
+            </article>
+          {% endfor %}
         {% else %}
-          <div class="empty-state" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-            <p>Enter a city to explore medical center coverage.</p>
+          <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 36px 20px; text-align: center;">
+            <p style="color: #64748B; font-size: 14px; margin: 0 0 14px 0;">No healthcare centers found matching your filter in {{ city }}.</p>
+            <a href="{{ url_for('main.hospital_locator', city='Jaipur') }}" class="finder-btn-book">Reset Search</a>
           </div>
         {% endif %}
-      </section>
-    </div>
-  {% else %}
-    <div class="empty-state">
-      <div class="stat-icon neutral" style="margin: 0 auto 12px auto;">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
       </div>
-      <p>{% if city %}No verified medical centers indexed for "{{ city }}". Please check spelling or try another metropolitan area.{% else %}Search a city or metropolitan region above to view verified medical facilities, trauma emergency hours, and geographic coverage.{% endif %}</p>
-    </div>
-  {% endif %}
 
-  <!-- Emergency Footer Banner -->
-  <div class="emergency-banner" style="margin-top: 32px;" role="alert">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-    <span><strong>Emergency:</strong> If you are experiencing chest pain, severe shortness of breath, sudden weakness, or heavy bleeding, call <a href="tel:112">112</a> immediately.</span>
+      <aside class="finder-map-panel" id="mapPanelCol" aria-label="Interactive map view">
+        <div class="finder-map-frame map-view-frame">
+          {% if map_html %}
+            {{ map_html|safe }}
+          {% else %}
+            <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: #94A3B8; font-size: 14px;">
+              Map currently loading or unavailable.
+            </div>
+          {% endif %}
+        </div>
+      </aside>
+    </div>
   </div>
+
+  <script>
+    let isOpenNowActive = false;
+
+    function toggleOpenNow() {
+      isOpenNowActive = !isOpenNowActive;
+      const btn = document.getElementById('openNowBtn');
+      if (isOpenNowActive) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+      applyClientFilters();
+    }
+
+    const knownLocationMap = {
+      "punjab": "Chandigarh",
+      "chandigarh": "Chandigarh",
+      "mohali": "Chandigarh",
+      "haryana": "Chandigarh",
+      "new delhi": "Delhi",
+      "delhi": "Delhi",
+      "ncr": "Delhi",
+      "mumbai": "Mumbai",
+      "bombay": "Mumbai",
+      "maharashtra": "Mumbai",
+      "jaipur": "Jaipur",
+      "rajasthan": "Jaipur",
+      "bengaluru": "Bengaluru",
+      "bangalore": "Bengaluru",
+      "karnataka": "Bengaluru",
+      "pune": "Pune",
+      "ahmedabad": "Ahmedabad",
+      "hyderabad": "Hyderabad",
+      "chennai": "Chennai",
+      "kolkata": "Kolkata",
+      "lucknow": "Lucknow"
+    };
+
+    function applyClientFilters() {
+      const rawSearch = (document.getElementById('facilitySearchInput')?.value || '').toLowerCase().trim();
+      const distanceVal = document.getElementById('distanceFilter')?.value || 'any';
+      const ratingVal = document.getElementById('ratingFilter')?.value || 'all';
+      const specialtyVal = document.getElementById('specialtyFilter')?.value || 'all';
+
+      const isSearchingLocation = Object.keys(knownLocationMap).some(term => rawSearch.includes(term) || term.includes(rawSearch));
+      const searchVal = isSearchingLocation ? '' : rawSearch;
+      
+      const cards = document.querySelectorAll('.finder-card');
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const text = card.dataset.text || '';
+        const dist = parseFloat(card.dataset.dist || '99');
+        const rating = parseFloat(card.dataset.rating || '0');
+        const is247 = card.dataset.open247 === 'true';
+
+        let matchSearch = !searchVal || text.includes(searchVal);
+        let matchDist = (distanceVal === 'any') || (dist <= parseFloat(distanceVal));
+        let matchRating = (ratingVal === 'all') || (rating >= parseFloat(ratingVal));
+        let matchOpen = !isOpenNowActive || is247;
+        let matchSpecialty = (specialtyVal === 'all') || text.includes(specialtyVal);
+
+        if (matchSearch && matchDist && matchRating && matchOpen && matchSpecialty) {
+          card.style.display = 'flex';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      const countElem = document.getElementById('displayedCount');
+      if (countElem) {
+        countElem.textContent = visibleCount;
+      }
+    }
+
+    function selectQuickLocation(locationName) {
+      const locInput = document.getElementById('locationSearchInput');
+      if (locInput) {
+        locInput.value = locationName;
+      }
+      document.getElementById('locatorMainForm')?.submit();
+    }
+
+    function detectUserLocation() {
+      const btn = document.getElementById('locateMeBtn');
+      if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser.");
+        return;
+      }
+      if (btn) {
+        btn.innerHTML = '<span>Locating...</span>';
+        btn.disabled = true;
+      }
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          // Reverse geocode via Nominatim
+          fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
+            .then(res => res.json())
+            .then(data => {
+              const place = data.address?.village || data.address?.town || data.address?.city || data.address?.county || `${lat.toFixed(3)}, ${lon.toFixed(3)}`;
+              const state = data.address?.state || "India";
+              const locInput = document.getElementById('locationSearchInput');
+              if (locInput) {
+                locInput.value = `${place}, ${state}`;
+              }
+              document.getElementById('locatorMainForm')?.submit();
+            })
+            .catch(() => {
+              const locInput = document.getElementById('locationSearchInput');
+              if (locInput) {
+                locInput.value = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+              }
+              document.getElementById('locatorMainForm')?.submit();
+            });
+        },
+        function(error) {
+          if (btn) {
+            btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M2 12h2"/><path d="M20 12h2"/></svg><span>Near Me</span>';
+            btn.disabled = false;
+          }
+          alert("Could not detect GPS location. Please type your city or village name.");
+        },
+        { timeout: 7000 }
+      );
+    }
+
+    // Live Autocomplete Suggestions for Indian Locations
+    let suggestDebounce = null;
+    const locInput = document.getElementById('locationSearchInput');
+    const suggestMenu = document.getElementById('locationSuggestDropdown');
+
+    locInput?.addEventListener('input', function() {
+      clearTimeout(suggestDebounce);
+      const val = this.value.trim();
+      if (val.length < 2) {
+        if (suggestMenu) {
+          suggestMenu.innerHTML = '';
+          suggestMenu.classList.remove('show');
+        }
+        return;
+      }
+      suggestDebounce = setTimeout(() => {
+        fetch(`/api/v1/locations/suggest?q=${encodeURIComponent(val)}`)
+          .then(res => res.json())
+          .then(data => {
+            if (!suggestMenu) return;
+            suggestMenu.innerHTML = '';
+            if (data.suggestions && data.suggestions.length > 0) {
+              data.suggestions.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'loc-suggest-item';
+                div.innerHTML = `
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.2" class="loc-suggest-pin"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <span><strong>${item.city}</strong>, ${item.state || 'India'}</span>
+                `;
+                div.onclick = function() {
+                  locInput.value = item.label;
+                  suggestMenu.classList.remove('show');
+                  document.getElementById('locatorMainForm')?.submit();
+                };
+                suggestMenu.appendChild(div);
+              });
+              suggestMenu.classList.add('show');
+            } else {
+              suggestMenu.classList.remove('show');
+            }
+          })
+          .catch(() => {});
+      }, 200);
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.finder-location-input-wrapper')) {
+        suggestMenu?.classList.remove('show');
+      }
+    });
+
+    function updateSort(sortValue) {
+      const hiddenSort = document.getElementById('hiddenSort');
+      if (hiddenSort) {
+        hiddenSort.value = sortValue;
+      }
+      document.getElementById('locatorMainForm').submit();
+    }
+
+    function switchView(view) {
+      const split = document.getElementById('splitViewContainer');
+      const mapCol = document.getElementById('mapPanelCol');
+      const listCol = document.getElementById('facilitiesCardsList');
+      const mapBtn = document.getElementById('viewMapBtn');
+      const listBtn = document.getElementById('viewListBtn');
+
+      if (view === 'list') {
+        mapBtn.classList.remove('active');
+        listBtn.classList.add('active');
+        mapCol.style.display = 'none';
+        split.style.gridTemplateColumns = '1fr';
+      } else {
+        listBtn.classList.remove('active');
+        mapBtn.classList.add('active');
+        mapCol.style.display = 'flex';
+        split.style.gridTemplateColumns = '1fr 1fr';
+      }
+    }
+
+    document.getElementById('facilitySearchInput')?.addEventListener('input', () => {
+      applyClientFilters();
+    });
+  </script>
+
+  <style>
+    .btn-locate-gps {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 9px;
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      color: #DC2626;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+    .btn-locate-gps:hover {
+      background: #FEE2E2;
+      border-color: #F87171;
+      transform: translateY(-1px);
+    }
+    .location-autocomplete-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      border-radius: 10px;
+      box-shadow: 0 14px 34px -4px rgba(15, 23, 42, 0.18);
+      max-height: 250px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+      padding: 6px 0;
+    }
+    .location-autocomplete-menu.show {
+      display: block;
+    }
+    .loc-suggest-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      font-size: 13px;
+      color: #1E293B;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      border-bottom: 1px solid #F8FAFC;
+    }
+    .loc-suggest-item:hover {
+      background: #F1F5F9;
+      color: #0F766E;
+    }
+    .loc-suggest-pin {
+      color: #DC2626;
+      flex-shrink: 0;
+    }
+    .quick-location-chips-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      margin-bottom: 6px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    .chips-label {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #64748B;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .chips-scroll {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: nowrap;
+    }
+    .loc-chip-btn {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      color: #334155;
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+    .loc-chip-btn:hover {
+      background: #EAF4EE;
+      border-color: #A3D2B5;
+      color: #135234;
+      transform: translateY(-1px);
+    }
+  </style>
+{% endif %}
 {% endblock %}

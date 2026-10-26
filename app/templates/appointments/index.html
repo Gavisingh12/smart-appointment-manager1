@@ -1,233 +1,312 @@
 {% extends "base.html" %}
 
-{% block title %}Appointments | CareCompass{% endblock %}
+{% block title %}Appointments | Care Cliniq{% endblock %}
 {% block meta_description %}Plan and manage your upcoming doctor visits and consultations.{% endblock %}
 
 {% block content %}
-  <header class="page-header">
-    <div style="display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-      <div>
-        <h1>Appointments & Visit Planning</h1>
-        <p class="page-subtitle">Schedule upcoming consultations, manage clinic reminders, and keep your care timeline organized.</p>
-      </div>
+  <header class="page-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;">
+    <div>
+      <h1 style="margin: 0 0 4px 0; font-size: 24px; font-weight: 700; color: #151D22;">Book Doctor Appointment</h1>
+      <p style="margin: 0; font-size: 13.5px; color: #475569;">Find and book appointments with verified doctors across all specialties.</p>
+    </div>
+    <div>
+      <button type="button" class="my-appointments-header-btn" id="myAppointmentsToggleBtn" aria-controls="viewSectionVisits" title="View scheduled visits">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        <span id="myAppointmentsBtnText">My Appointments</span>
+        <span class="my-appointments-count-badge">{{ appointments|length }}</span>
+      </button>
     </div>
   </header>
 
-  <!-- 3 Mini Stats Overview -->
-  <section class="stat-grid" aria-label="Appointments metrics">
-    <div class="stat-card">
-      <div class="stat-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-      </div>
-      <div class="stat-content">
-        <div class="stat-label">Upcoming Visits</div>
-        <div class="stat-value">{{ upcoming_count }} scheduled</div>
-        <div class="stat-meta">{% if next_appointment %}Next visit on {{ next_appointment.date.strftime('%d %b') }}{% else %}No visits scheduled{% endif %}</div>
+  <!-- SECTION 1: CENTERED SPECIALIST DIRECTORY (Active By Default) -->
+  <section id="viewSectionDoctors" role="tabpanel" aria-labelledby="viewTabDoctors">
+    <!-- Department Filter Bar (5 Direct Options + More Dropdown) -->
+    <div class="dept-filter-bar" role="tablist" aria-label="Filter doctors by department">
+      <button type="button" class="dept-filter-btn is-active" data-dept="all">
+        All Specialists ({{ available_doctors|length }})
+      </button>
+      {% for dept in doctor_departments[:4] %}
+        <button type="button" class="dept-filter-btn" data-dept="{{ dept.id }}">
+          {% if dept.icon == 'stethoscope' %}🩺{% elif dept.icon == 'heart' %}❤️{% elif dept.icon == 'sparkles' %}🧴{% elif dept.icon == 'smile' %}👶{% elif dept.icon == 'shield' %}🦴{% elif dept.icon == 'user-check' %}🌸{% elif dept.icon == 'activity' %}🧠{% else %}🫁{% endif %}
+          {{ dept.name }} ({{ dept.doctors|length }})
+        </button>
+      {% endfor %}
+
+      <!-- More Specialties Dropdown (Remaining 4 Categories) -->
+      <div class="more-dept-dropdown-wrapper" id="moreDeptDropdownWrapper">
+        <button type="button" class="dept-filter-btn more-dept-toggle-btn" id="moreDeptToggleBtn" aria-expanded="false" aria-haspopup="true">
+          <span id="moreDeptBtnLabel">+ More Specialties ({{ doctor_departments[4:]|length }})</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-left: 2px;"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="more-dept-menu" id="moreDeptMenu" role="menu">
+          {% for dept in doctor_departments[4:] %}
+            <button type="button" class="more-dept-menu-item dept-filter-btn" data-dept="{{ dept.id }}" role="menuitem">
+              <span>{% if dept.icon == 'stethoscope' %}🩺{% elif dept.icon == 'heart' %}❤️{% elif dept.icon == 'sparkles' %}🧴{% elif dept.icon == 'smile' %}👶{% elif dept.icon == 'shield' %}🦴{% elif dept.icon == 'user-check' %}🌸{% elif dept.icon == 'activity' %}🧠{% else %}🫁{% endif %}</span>
+              <span>{{ dept.name }}</span>
+              <span class="more-dept-badge">{{ dept.doctors|length }}</span>
+            </button>
+          {% endfor %}
+        </div>
       </div>
     </div>
 
-    <div class="stat-card">
-      <div class="stat-icon accent">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+    <!-- Specialty Clinical Knowledge Banner (Dynamically changes when user selects a category) -->
+    <div class="specialty-knowledge-card" id="specialtyKnowledgeCard">
+      <div class="specialty-knowledge-main">
+        <div class="specialty-knowledge-badge-row">
+          <span class="specialty-knowledge-icon" id="knowledgeIcon">🏥</span>
+          <h2 class="specialty-knowledge-title" id="knowledgeTitle">All Medical Specialists ({{ available_doctors|length }})</h2>
+        </div>
+        <p class="specialty-knowledge-desc" id="knowledgeDesc">
+          Browse verified clinic doctors across 8 medical specialties. Select a specialty above to review clinical focus, typical symptoms treated, and schedule your appointment slot.
+        </p>
+        <div class="specialty-when-to-see" id="knowledgeWhenToSee">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: #135234; flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          <span id="knowledgeWhenToSeeText">Select any department above to view specific clinical focus, diagnosis scope, and doctor profiles.</span>
+        </div>
       </div>
-      <div class="stat-content">
-        <div class="stat-label">Primary Doctor</div>
-        <div class="stat-value">{{ next_appointment.doctor if next_appointment else 'No doctor assigned' }}</div>
-        <div class="stat-meta" style="color: var(--accent-text);">{% if next_appointment %}Attending Physician{% else %}Assign during scheduling{% endif %}</div>
+      <div class="specialty-knowledge-conditions" id="knowledgeConditionsBox">
+        <div class="specialty-conditions-heading">Typical Clinical Scope:</div>
+        <div class="specialty-conditions-tags" id="knowledgeConditionsTags">
+          <span class="spec-condition-tag">Primary &amp; Preventive Care</span>
+          <span class="spec-condition-tag">Expert Diagnostics</span>
+          <span class="spec-condition-tag">In-Clinic Consultations</span>
+          <span class="spec-condition-tag">Digital Prescriptions</span>
+        </div>
       </div>
     </div>
 
-    <div class="stat-card">
-      <div class="stat-icon neutral">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
-      </div>
-      <div class="stat-content">
-        <div class="stat-label">Timeline Status</div>
-        <div class="stat-value">{{ appointments|length }} total record{% if appointments|length != 1 %}s{% endif %}</div>
-        <div class="stat-meta" style="color: var(--text-muted);">{% if appointments %}Organized chronologically{% else %}Timeline ready for booking{% endif %}</div>
-      </div>
+    <!-- Hidden JSON payload with specialty knowledge -->
+    <script id="specialtiesData" type="application/json">
+    {
+      "all": {
+        "icon": "🏥",
+        "title": "All Medical Specialists ({{ available_doctors|length }})",
+        "desc": "Browse verified clinic doctors across 8 medical specialties. Select a specialty above to review clinical focus, typical symptoms treated, and schedule your appointment slot.",
+        "symptoms": ["Primary & Preventive Care", "Expert Diagnostics", "In-Clinic Consultations", "Digital Prescriptions"],
+        "when_to_see": "Select any department above to view specific clinical focus, diagnosis scope, and doctor profiles.",
+        "count_text": "{{ available_doctors|length }} Doctors Available"
+      }{% for dept in doctor_departments %},
+      "{{ dept.id }}": {
+        "icon": "{% if dept.icon == 'stethoscope' %}🩺{% elif dept.icon == 'heart' %}❤️{% elif dept.icon == 'sparkles' %}🧴{% elif dept.icon == 'smile' %}👶{% elif dept.icon == 'shield' %}🦴{% elif dept.icon == 'user-check' %}🌸{% elif dept.icon == 'activity' %}🧠{% else %}🫁{% endif %}",
+        "title": "{{ dept.about_title }}",
+        "desc": "{{ dept.about_desc }}",
+        "symptoms": {{ dept.symptoms|tojson }},
+        "when_to_see": "{{ dept.when_to_see }}",
+        "count_text": "{{ dept.doctors|length }} Verified {{ dept.name }} Specialists"
+      }{% endfor %}
+    }
+    </script>
+
+    <!-- Center Doctors Grid -->
+    <div class="center-doctors-grid" id="centerDoctorsGrid">
+      {% for dept in doctor_departments %}
+        {% for doc in dept.doctors %}
+          <article class="center-doctor-card" data-dept="{{ dept.id }}">
+            <div class="center-doctor-top">
+              <div class="center-doctor-avatar-wrap">
+                <img src="{{ url_for('static', filename=doc.image) }}" alt="{{ doc.name }}" class="center-doctor-avatar">
+                <span class="center-doctor-online-dot" title="Available for clinic consultation"></span>
+              </div>
+              <div class="center-doctor-details">
+                <div class="center-doctor-name">{{ doc.name }}</div>
+                <span class="center-doctor-spec">{{ doc.specialty }}</span>
+                <div class="center-doctor-rating">
+                  <span style="color: #F59E0B; font-weight: 700;">★ {{ doc.rating }}</span>
+                  <span>({{ doc.reviews }} reviews)</span>
+                  <span>&bull; {{ doc.experience }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="center-doctor-middle">
+              <div class="center-doctor-meta-row">
+                <span style="font-weight: 500;">Clinical Focus:</span>
+                <span style="font-weight: 600; color: #1E293B; text-align: right;">{{ dept.name }}</span>
+              </div>
+              <div class="center-doctor-meta-row">
+                <span class="center-doctor-fee">Fee: {{ doc.fee }}</span>
+                <span class="center-doctor-avail">{{ doc.availability }}</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="book-appointment-btn open-booking-modal-btn"
+              data-doctor="{{ doc.name }} ({{ doc.specialty }})"
+              data-name="{{ doc.name }}"
+              data-specialty="{{ doc.specialty }}"
+              data-dept="{{ dept.name }}"
+              data-fee="{{ doc.fee }}"
+              data-notes="{{ doc.default_notes }}"
+              data-image="{{ url_for('static', filename=doc.image) }}"
+              data-docid="{{ doc.id }}"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <span>Book Appointment</span>
+            </button>
+          </article>
+        {% endfor %}
+      {% endfor %}
     </div>
   </section>
 
-  <div class="grid-12">
-    <!-- Left 8 Columns: Appointments List & Segmented Tabs -->
-    <div class="col-8">
-      <section class="card" aria-labelledby="appointments-list-heading">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
-          <h2 id="appointments-list-heading" style="margin: 0;">Scheduled visits</h2>
-          <div class="segmented-control" role="tablist" aria-label="Appointment timeline filter">
-            <button type="button" class="segmented-btn" id="tab-upcoming" role="tab" aria-selected="true" aria-controls="panel-upcoming">
-              Upcoming ({{ upcoming_count }})
-            </button>
-            <button type="button" class="segmented-btn" id="tab-all" role="tab" aria-selected="false" aria-controls="panel-all">
-              All visits ({{ appointments|length }})
-            </button>
-          </div>
-        </div>
-
-        {% if appointments %}
-          <div class="appointment-list" id="appointmentsContainer">
-            {% for appointment in appointments %}
-              {% set is_upcoming = (appointment.date.strftime('%Y-%m-%d') >= today_iso) if today_iso else true %}
-              <article class="appointment-card" data-upcoming="{{ 'true' if is_upcoming else 'false' }}">
-                <div class="appointment-card-body">
-                  <div class="date-block" aria-hidden="true">
-                    <span class="date-block-month">{{ appointment.date.strftime('%b') }}</span>
-                    <span class="date-block-day">{{ appointment.date.strftime('%d') }}</span>
-                  </div>
-                  <div class="appointment-details">
-                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
-                      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                        <div class="doctor-name">{{ appointment.doctor }}</div>
-                        <span class="doctor-specialty-badge">Physician</span>
-                        {% if is_upcoming %}
-                          <span class="status-badge confirmed">Confirmed</span>
-                        {% else %}
-                          <span class="status-badge neutral">Completed</span>
-                        {% endif %}
-                      </div>
-                      <span class="muted-text" style="font-size: 11px; font-weight: 600; letter-spacing: 0.04em;">REF-APT-{{ appointment.id }}</span>
-                    </div>
-                    <div class="appointment-time">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: -2px; margin-right: 4px;" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                      {{ appointment.date.strftime('%A, %d %B %Y') }} at {{ appointment.time }}
-                    </div>
-                    {% if appointment.notes %}
-                      <div class="appointment-notes">
-                        <strong>Consultation Agenda:</strong> {{ appointment.notes }}
-                      </div>
-                    {% endif %}
-                  </div>
-                </div>
-                <div class="appointment-card-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                  <a href="{{ url_for('main.download_appointment_ics', appointment_id=appointment.id) }}" class="button secondary small" title="Sync with Google, Apple, or Outlook Calendar (.ics)" style="display: inline-flex; align-items: center; gap: 5px; text-decoration: none;">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    Sync .ics
-                  </a>
-                  <form method="post" action="{{ url_for('main.delete_appointment', appointment_id=appointment.id) }}" class="remove-appointment-form">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="button" class="button danger small trigger-delete-dialog" data-doctor="{{ appointment.doctor }}" data-date="{{ appointment.date.strftime('%d %b %Y') }}">
-                      Cancel Visit
-                    </button>
-                  </form>
-                </div>
-              </article>
-            {% endfor %}
-          </div>
-        {% else %}
-          <div class="appointment-empty-hub">
-            <div class="empty-hub-hero">
-              <div class="empty-hub-icon">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg>
-              </div>
-              <h3 class="empty-hub-title">Your Consultation Timeline is Open</h3>
-              <p class="empty-hub-desc">
-                Schedule your upcoming appointments to maintain an organized clinical history, set visit agendas, and ensure your doctor answers your critical health questions.
-              </p>
-            </div>
-
-            <!-- 3 Clinical Step Guides -->
-            <div class="empty-hub-steps">
-              <div class="empty-step-card">
-                <span class="empty-step-num">Step 1</span>
-                <div class="empty-step-content">
-                  <strong>Choose Slot & Doctor</strong>
-                  <p>Pick your clinic visit date, preferred time, and attending physician.</p>
-                </div>
-              </div>
-              <div class="empty-step-card">
-                <span class="empty-step-num">Step 2</span>
-                <div class="empty-step-content">
-                  <strong>Set Visit Agenda</strong>
-                  <p>List symptoms, prescription refill requests, or lab questions.</p>
-                </div>
-              </div>
-              <div class="empty-step-card">
-                <span class="empty-step-num">Step 3</span>
-                <div class="empty-step-content">
-                  <strong>Review & Prepare</strong>
-                  <p>Bring your structured discussion points directly to your doctor.</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Quick Template Fillers -->
-            <div class="empty-hub-presets">
-              <span class="empty-presets-label">⚡ Quick Consultation Templates (Click to fill form):</span>
-              <div class="empty-presets-chips">
-                <button type="button" class="preset-chip" data-doctor="Dr. Alistair Sharma (Cardiology)" data-notes="Routine cardiovascular review, blood pressure medication check, discuss occasional palpitations.">
-                  🩺 Cardiology Review
-                </button>
-                <button type="button" class="preset-chip" data-doctor="Dr. Sarah Jenkins (General Practice)" data-notes="Annual wellness examination, review seasonal allergies, update vaccination records.">
-                  📋 Annual Wellness Exam
-                </button>
-                <button type="button" class="preset-chip" data-doctor="Dr. Marcus Vance (Pulmonology)" data-notes="Follow-up on persistent dry cough, review chest x-ray results, inhaler prescription refill.">
-                  🫁 Pulmonology Follow-Up
-                </button>
-              </div>
-            </div>
-          </div>
-        {% endif %}
-      </section>
-    </div>
-
-    <!-- Right 4 Columns: New Appointment Booking Card + Visit Prep -->
-    <div class="col-4 sticky-sidebar">
-      <section class="card" aria-labelledby="new-appointment-heading">
-        <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px;">
-          <h2 id="new-appointment-heading" class="card-title" style="margin: 0;">Schedule Doctor Visit</h2>
-          <span class="status-badge neutral" style="font-size: 11px;">Clinic Slot</span>
-        </div>
-        <form method="post" class="stack-form">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          
-          <div class="form-row-split">
-            <div class="form-group">
-              <label for="app-date" class="input-label">Date</label>
-              <input type="date" id="app-date" name="date" min="{{ today_iso }}" required>
-            </div>
-
-            <div class="form-group">
-              <label for="app-time" class="input-label">Time</label>
-              <input type="time" id="app-time" name="time" required>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="app-doctor" class="input-label">Attending Doctor or Clinic</label>
-            <input type="text" id="app-doctor" name="doctor" maxlength="100" placeholder="e.g. Dr. Alistair Sharma (Cardiology)" required>
-          </div>
-
-          <div class="form-group">
-            <label for="app-notes" class="input-label">Visit Agenda & Discussion Topics</label>
-            <textarea id="app-notes" name="notes" rows="3" maxlength="500" placeholder="e.g. Review blood pressure readings, discuss medication side effects, ask about persistent cough..."></textarea>
-          </div>
-
-          <button type="submit" class="button primary" style="width: 100%;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            Confirm & Schedule Visit
+  <!-- SECTION 2: MY SCHEDULED VISITS (Toggleable Tab) -->
+  <section id="viewSectionVisits" role="tabpanel" aria-labelledby="viewTabVisits" style="display: none;">
+    <div class="card" aria-labelledby="appointments-list-heading">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <h2 id="appointments-list-heading" style="margin: 0;">Scheduled Visits Timeline</h2>
+        <div class="segmented-control" role="tablist" aria-label="Appointment timeline filter">
+          <button type="button" class="segmented-btn" id="tab-upcoming" role="tab" aria-selected="true">
+            Upcoming ({{ upcoming_count }})
           </button>
-        </form>
+          <button type="button" class="segmented-btn" id="tab-all" role="tab" aria-selected="false">
+            All visits ({{ appointments|length }})
+          </button>
+        </div>
+      </div>
 
-        <!-- Preparation Tips Box -->
-        <div class="checklist-widget" style="margin-top: 18px;">
-          <div class="checklist-title">Pre-Visit Clinical Checklist</div>
-          <div class="checklist-item">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            <span>Arrive 10 minutes prior to appointment</span>
+      {% if appointments %}
+        <div class="appointment-list" id="appointmentsContainer">
+          {% for appointment in appointments %}
+            {% set is_upcoming = (appointment.date.strftime('%Y-%m-%d') >= today_iso) if today_iso else true %}
+            <article class="appointment-card" data-upcoming="{{ 'true' if is_upcoming else 'false' }}">
+              <div class="appointment-card-body">
+                <div class="date-block" aria-hidden="true">
+                  <span class="date-block-month">{{ appointment.date.strftime('%b') }}</span>
+                  <span class="date-block-day">{{ appointment.date.strftime('%d') }}</span>
+                </div>
+                <div class="appointment-details">
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                      <div class="doctor-name">{{ appointment.doctor }}</div>
+                      <span class="doctor-specialty-badge">Physician</span>
+                      {% if is_upcoming %}
+                        <span class="status-badge confirmed">Confirmed</span>
+                      {% else %}
+                        <span class="status-badge neutral">Completed</span>
+                      {% endif %}
+                    </div>
+                    <span class="muted-text" style="font-size: 11px; font-weight: 600; letter-spacing: 0.04em;">REF-APT-{{ appointment.id }}</span>
+                  </div>
+                  <div class="appointment-time">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: -2px; margin-right: 4px;" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    {{ appointment.date.strftime('%A, %d %B %Y') }} at {{ appointment.time }}
+                  </div>
+                  {% if appointment.notes %}
+                    <div class="appointment-notes">
+                      <strong>Consultation Agenda:</strong> {{ appointment.notes }}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="appointment-card-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <a href="{{ url_for('main.download_appointment_ics', appointment_id=appointment.id) }}" class="button secondary small" title="Sync with Google, Apple, or Outlook Calendar (.ics)" style="display: inline-flex; align-items: center; gap: 5px; text-decoration: none;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  Sync .ics
+                </a>
+                <form method="post" action="{{ url_for('main.delete_appointment', appointment_id=appointment.id) }}" class="remove-appointment-form">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="button" class="button danger small trigger-delete-dialog" data-doctor="{{ appointment.doctor }}" data-date="{{ appointment.date.strftime('%d %b %Y') }}">
+                    Cancel Visit
+                  </button>
+                </form>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="text-align: center; padding: 40px 20px;">
+          <div style="width: 52px; height: 52px; border-radius: 50%; background: #EDF7F1; color: #135234; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px auto;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           </div>
-          <div class="checklist-item">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            <span>Bring insurance card & photo ID</span>
+          <h3 style="margin: 0 0 6px 0; font-size: 16px; color: #151D22;">No Visits Scheduled Yet</h3>
+          <p style="margin: 0 0 16px 0; font-size: 13px; color: #64748B;">Browse verified specialists and pick a convenient consultation slot.</p>
+          <button type="button" class="button primary small" id="switchToDoctorsTabBtn">
+            Browse Doctors &amp; Book &rarr;
+          </button>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       BOOK APPOINTMENT POPUP MODAL (Opens upon doctor selection)
+       ========================================================================= -->
+  <dialog id="bookAppointmentModal" class="booking-modal-dialog" aria-labelledby="modal-book-title">
+    <div class="booking-modal-header">
+      <h2 id="modal-book-title" class="booking-modal-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: #135234;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        <span>Book Consultation Slot</span>
+      </h2>
+      <button type="button" class="booking-modal-close-btn" id="closeBookingModalBtn" aria-label="Close dialog">&times;</button>
+    </div>
+
+    <!-- Selected Doctor Summary inside Modal -->
+    <div class="booking-modal-doc-banner">
+      <img src="{{ url_for('static', filename='images/doctor_ananya.jpg') }}" alt="Selected Doctor" id="modalDocAvatar" class="booking-modal-doc-avatar">
+      <div class="booking-modal-doc-details">
+        <div class="booking-modal-doc-name" id="modalDocName">Dr. Ananya Mehta, MD</div>
+        <div class="booking-modal-doc-sub">
+          <span id="modalDocSpec">Senior General Physician</span> &bull; <strong id="modalDocFee" style="color: #135234;">₹600</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Booking Form -->
+    <form method="post" action="{{ url_for('main.appointment') }}" id="modalBookingForm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="doctor" id="modalDocHiddenInput" value="" required>
+
+      <div class="booking-modal-body">
+        <!-- 1. Date Picker -->
+        <div>
+          <div class="modal-label">
+            <span>Consultation Date</span>
+            <span style="font-size: 11px; color: #16A34A; text-transform: none;">Available Slots</span>
           </div>
-          <div class="checklist-item">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            <span>Have recent lab reports ready</span>
+          <input type="date" id="modal-app-date" name="date" min="{{ today_iso }}" class="input-control" required>
+          <div class="modal-date-shortcuts">
+            <button type="button" class="modal-date-btn is-active" data-days="1">Tomorrow</button>
+            <button type="button" class="modal-date-btn" data-days="2">+2 Days</button>
+            <button type="button" class="modal-date-btn" data-days="4">Weekend</button>
           </div>
         </div>
-      </section>
-    </div>
-  </div>
+
+        <!-- 2. Time Slot Selection -->
+        <div>
+          <div class="modal-label">
+            <span>Preferred Time Slot</span>
+            <span style="font-size: 11px; color: #64748B; text-transform: none;">Clinic Hours</span>
+          </div>
+          <input type="hidden" id="modal-app-time" name="time" value="10:30" required>
+          <div class="modal-time-grid">
+            <button type="button" class="modal-slot-pill is-active" data-time="10:30">10:30 AM</button>
+            <button type="button" class="modal-slot-pill" data-time="12:00">12:00 PM</button>
+            <button type="button" class="modal-slot-pill" data-time="15:30">03:30 PM</button>
+            <button type="button" class="modal-slot-pill" data-time="17:00">05:00 PM</button>
+          </div>
+        </div>
+
+        <!-- 3. Visit Agenda & Notes -->
+        <div>
+          <div class="modal-label">
+            <span>Visit Agenda &amp; Symptoms</span>
+            <span style="font-size: 11px; color: #64748B; text-transform: none;">Optional</span>
+          </div>
+          <textarea id="modal-app-notes" name="notes" rows="2" maxlength="500" class="journal-textarea" style="min-height: 70px;" placeholder="e.g. Discuss fever symptoms, prescription refills, or review blood test results..."></textarea>
+        </div>
+      </div>
+
+      <div class="booking-modal-footer">
+        <button type="button" class="booking-modal-cancel-btn" id="cancelModalBtn">Cancel</button>
+        <button type="submit" class="booking-modal-submit-btn" id="modalSubmitBtn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="modalSubmitBtnText">Confirm &amp; Schedule Visit</span>
+        </button>
+      </div>
+    </form>
+  </dialog>
 
   <!-- Accessible Remove Confirmation Dialog -->
   <dialog id="deleteAppointmentDialog" class="confirm-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-desc">
@@ -243,34 +322,275 @@
 {% block scripts %}
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const presetChips = document.querySelectorAll(".preset-chip");
-      const doctorInput = document.getElementById("app-doctor");
-      const notesInput = document.getElementById("app-notes");
-      const dateInput = document.getElementById("app-date");
-      const timeInput = document.getElementById("app-time");
+      // 1. Header View Switcher (Browse Doctors vs My Appointments)
+      const myAppointmentsToggleBtn = document.getElementById("myAppointmentsToggleBtn");
+      const sectionDoctors = document.getElementById("viewSectionDoctors");
+      const sectionVisits = document.getElementById("viewSectionVisits");
+      const switchToDoctorsBtn = document.getElementById("switchToDoctorsTabBtn");
+      let isShowingVisits = false;
 
-      presetChips.forEach(chip => {
-        chip.addEventListener("click", () => {
-          if (doctorInput && chip.dataset.doctor) {
-            doctorInput.value = chip.dataset.doctor;
+      const setViewMode = (showVisits) => {
+        isShowingVisits = showVisits;
+        if (sectionDoctors && sectionVisits) {
+          sectionDoctors.style.display = showVisits ? "none" : "block";
+          sectionVisits.style.display = showVisits ? "block" : "none";
+        }
+        if (myAppointmentsToggleBtn) {
+          myAppointmentsToggleBtn.classList.toggle("is-active", showVisits);
+          const btnText = document.getElementById("myAppointmentsBtnText");
+          if (btnText) {
+            btnText.textContent = showVisits ? "← Back to Doctors" : "My Appointments";
           }
-          if (notesInput && chip.dataset.notes) {
-            notesInput.value = chip.dataset.notes;
+        }
+      };
+
+      if (myAppointmentsToggleBtn) {
+        myAppointmentsToggleBtn.addEventListener("click", () => setViewMode(!isShowingVisits));
+      }
+      if (switchToDoctorsBtn) {
+        switchToDoctorsBtn.addEventListener("click", () => setViewMode(false));
+      }
+
+      // 2. Specialty Knowledge Data & Department Filtering
+      let specialtiesData = {};
+      try {
+        const dataEl = document.getElementById("specialtiesData");
+        if (dataEl) {
+          specialtiesData = JSON.parse(dataEl.textContent);
+        }
+      } catch (err) {
+        console.warn("Failed to parse specialtiesData", err);
+      }
+
+      const filterBtns = document.querySelectorAll(".dept-filter-btn:not(.more-dept-toggle-btn)");
+      const doctorCards = document.querySelectorAll(".center-doctor-card");
+      const moreDeptWrapper = document.getElementById("moreDeptDropdownWrapper");
+      const moreDeptToggleBtn = document.getElementById("moreDeptToggleBtn");
+      const moreDeptBtnLabel = document.getElementById("moreDeptBtnLabel");
+
+      // Elements of Knowledge Banner
+      const knowledgeIcon = document.getElementById("knowledgeIcon");
+      const knowledgeTitle = document.getElementById("knowledgeTitle");
+      const knowledgeDesc = document.getElementById("knowledgeDesc");
+      const knowledgeWhenToSeeText = document.getElementById("knowledgeWhenToSeeText");
+      const knowledgeConditionsTags = document.getElementById("knowledgeConditionsTags");
+      const knowledgeCard = document.getElementById("specialtyKnowledgeCard");
+
+      // Toggle dropdown menu
+      if (moreDeptToggleBtn && moreDeptWrapper) {
+        moreDeptToggleBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const isOpen = moreDeptWrapper.classList.toggle("is-open");
+          moreDeptToggleBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        });
+
+        document.addEventListener("click", (e) => {
+          if (!moreDeptWrapper.contains(e.target)) {
+            moreDeptWrapper.classList.remove("is-open");
+            moreDeptToggleBtn.setAttribute("aria-expanded", "false");
           }
-          if (dateInput && !dateInput.value) {
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            dateInput.value = tomorrow.toISOString().split("T")[0];
+        });
+      }
+
+      const updateKnowledgeBanner = (deptId) => {
+        const info = specialtiesData[deptId] || specialtiesData["all"];
+        if (!info) return;
+
+        if (knowledgeCard) {
+          knowledgeCard.classList.remove("fade-in-quick");
+          void knowledgeCard.offsetWidth; // trigger reflow
+          knowledgeCard.classList.add("fade-in-quick");
+        }
+
+        if (knowledgeIcon) knowledgeIcon.textContent = info.icon || "🩺";
+        if (knowledgeTitle) knowledgeTitle.textContent = info.title || "Specialist Care";
+        if (knowledgeDesc) knowledgeDesc.textContent = info.desc || "";
+        if (knowledgeWhenToSeeText) {
+          knowledgeWhenToSeeText.textContent = info.when_to_see ? `When to consult: ${info.when_to_see}` : "";
+        }
+
+        if (knowledgeConditionsTags && Array.isArray(info.symptoms)) {
+          knowledgeConditionsTags.innerHTML = info.symptoms.map(s => `<span class="spec-condition-tag">${s}</span>`).join("");
+        }
+      };
+
+      filterBtns.forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const targetDept = btn.dataset.dept;
+
+          // Clear active state across all filter buttons
+          document.querySelectorAll(".dept-filter-btn").forEach(b => b.classList.remove("is-active"));
+          btn.classList.add("is-active");
+
+          // Handle if item was clicked from dropdown menu
+          const isDropdownItem = btn.classList.contains("more-dept-menu-item");
+          if (isDropdownItem && moreDeptToggleBtn && moreDeptBtnLabel) {
+            moreDeptToggleBtn.classList.add("is-active");
+            moreDeptBtnLabel.textContent = btn.innerText.trim();
+            if (moreDeptWrapper) moreDeptWrapper.classList.remove("is-open");
+          } else if (moreDeptToggleBtn && moreDeptBtnLabel) {
+            moreDeptToggleBtn.classList.remove("is-active");
+            moreDeptBtnLabel.textContent = "+ More Specialties (4)";
           }
-          if (timeInput && !timeInput.value) {
-            timeInput.value = "10:30";
+
+          // Update Knowledge Card
+          updateKnowledgeBanner(targetDept);
+
+          // Filter doctor cards with smooth stagger
+          doctorCards.forEach(card => {
+            if (targetDept === "all" || card.dataset.dept === targetDept) {
+              card.style.display = "flex";
+            } else {
+              card.style.display = "none";
+            }
+          });
+        });
+      });
+
+      // 3. Booking Popup Modal
+      const modal = document.getElementById("bookAppointmentModal");
+      const modalCloseBtn = document.getElementById("closeBookingModalBtn");
+      const modalCancelBtn = document.getElementById("cancelModalBtn");
+      const modalDocAvatar = document.getElementById("modalDocAvatar");
+      const modalDocName = document.getElementById("modalDocName");
+      const modalDocSpec = document.getElementById("modalDocSpec");
+      const modalDocFee = document.getElementById("modalDocFee");
+      const modalDocHiddenInput = document.getElementById("modalDocHiddenInput");
+      const modalDateInput = document.getElementById("modal-app-date");
+      const modalTimeInput = document.getElementById("modal-app-time");
+      const modalNotesInput = document.getElementById("modal-app-notes");
+      const modalSubmitBtnText = document.getElementById("modalSubmitBtnText");
+      const modalDateBtns = document.querySelectorAll(".modal-date-btn");
+      const modalSlotPills = document.querySelectorAll(".modal-slot-pill");
+
+      // Auto-set default date to tomorrow
+      if (modalDateInput && !modalDateInput.value) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        modalDateInput.value = tomorrow.toISOString().split("T")[0];
+      }
+
+      // Open Modal on "Book Appointment" button click
+      document.querySelectorAll(".open-booking-modal-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const docFullName = btn.dataset.doctor;
+          const docName = btn.dataset.name;
+          const docSpec = btn.dataset.specialty;
+          const docFee = btn.dataset.fee;
+          const docImage = btn.dataset.image;
+          const docNotes = btn.dataset.notes;
+
+          if (modalDocAvatar) modalDocAvatar.src = docImage;
+          if (modalDocName) modalDocName.textContent = docName;
+          if (modalDocSpec) modalDocSpec.textContent = docSpec;
+          if (modalDocFee) modalDocFee.textContent = docFee;
+          if (modalDocHiddenInput) modalDocHiddenInput.value = docFullName;
+          if (modalNotesInput) modalNotesInput.value = docNotes || "";
+          if (modalSubmitBtnText) {
+            modalSubmitBtnText.textContent = `Schedule Visit (${docFee})`;
           }
-          if (doctorInput) {
-            doctorInput.focus();
-            doctorInput.scrollIntoView({ behavior: "smooth", block: "center" });
+
+          if (modal && typeof modal.showModal === "function") {
+            modal.showModal();
           }
         });
       });
+
+      // Close modal actions
+      const closeModal = () => {
+        if (modal && modal.open) modal.close();
+      };
+
+      if (modalCloseBtn) modalCloseBtn.addEventListener("click", closeModal);
+      if (modalCancelBtn) modalCancelBtn.addEventListener("click", closeModal);
+      if (modal) {
+        modal.addEventListener("click", (e) => {
+          if (e.target === modal) closeModal();
+        });
+      }
+
+      // Quick Date Shortcuts inside modal
+      modalDateBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+          modalDateBtns.forEach(b => b.classList.remove("is-active"));
+          btn.classList.add("is-active");
+          const daysToAdd = parseInt(btn.dataset.days || "1", 10);
+          const targetDate = new Date();
+          targetDate.setDate(targetDate.getDate() + daysToAdd);
+          if (modalDateInput) {
+            modalDateInput.value = targetDate.toISOString().split("T")[0];
+          }
+        });
+      });
+
+      // Time Slot Pills inside modal
+      modalSlotPills.forEach(pill => {
+        pill.addEventListener("click", () => {
+          modalSlotPills.forEach(p => p.classList.remove("is-active"));
+          pill.classList.add("is-active");
+          if (modalTimeInput) {
+            modalTimeInput.value = pill.dataset.time || "10:30";
+          }
+        });
+      });
+
+      // 4. Tab switching for Scheduled Visits (Upcoming vs All)
+      const tabUpcoming = document.getElementById("tab-upcoming");
+      const tabAll = document.getElementById("tab-all");
+      const visitCards = document.querySelectorAll(".appointment-card");
+
+      const setVisitTab = (isUpcomingOnly) => {
+        if (tabUpcoming && tabAll) {
+          tabUpcoming.setAttribute("aria-selected", isUpcomingOnly ? "true" : "false");
+          tabUpcoming.classList.toggle("is-active", isUpcomingOnly);
+          tabAll.setAttribute("aria-selected", !isUpcomingOnly ? "true" : "false");
+          tabAll.classList.toggle("is-active", !isUpcomingOnly);
+        }
+
+        visitCards.forEach(card => {
+          if (isUpcomingOnly) {
+            const isUp = card.getAttribute("data-upcoming") === "true";
+            card.style.display = isUp ? "flex" : "none";
+          } else {
+            card.style.display = "flex";
+          }
+        });
+      };
+
+      if (tabUpcoming) tabUpcoming.addEventListener("click", () => setVisitTab(true));
+      if (tabAll) tabAll.addEventListener("click", () => setVisitTab(false));
+
+      // 5. Cancel Appointment Dialog
+      const deleteDialog = document.getElementById("deleteAppointmentDialog");
+      const cancelDialogBtn = document.getElementById("cancelDialogBtn");
+      const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+      const dialogDoctorName = document.getElementById("dialog-doctor-name");
+      const dialogDate = document.getElementById("dialog-appointment-date");
+      let activeDeleteForm = null;
+
+      document.querySelectorAll(".trigger-delete-dialog").forEach(btn => {
+        btn.addEventListener("click", () => {
+          activeDeleteForm = btn.closest("form");
+          if (dialogDoctorName) dialogDoctorName.textContent = btn.dataset.doctor || "your doctor";
+          if (dialogDate) dialogDate.textContent = btn.dataset.date || "scheduled date";
+          if (deleteDialog && typeof deleteDialog.showModal === "function") {
+            deleteDialog.showModal();
+          } else if (confirm("Cancel this appointment?")) {
+            if (activeDeleteForm) activeDeleteForm.submit();
+          }
+        });
+      });
+
+      if (cancelDialogBtn && deleteDialog) {
+        cancelDialogBtn.addEventListener("click", () => deleteDialog.close());
+      }
+
+      if (confirmDeleteBtn && deleteDialog) {
+        confirmDeleteBtn.addEventListener("click", () => {
+          if (activeDeleteForm) activeDeleteForm.submit();
+        });
+      }
     });
   </script>
 {% endblock %}
